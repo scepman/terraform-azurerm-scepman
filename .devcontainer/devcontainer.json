@@ -1,0 +1,81 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/ubuntu
+{
+    "name": "SCEPman",
+    "build": {
+        "dockerfile": "Dockerfile",
+        // Update 'VARIANT' to pick an Ubuntu version: jammy / ubuntu-22.04, focal / ubuntu-20.04, bionic /ubuntu-18.04
+        // Use ubuntu-22.04 or ubuntu-18.04 on local arm64/Apple Silicon.
+        "args": {
+            "VARIANT": "ubuntu-22.04"
+        }
+    },
+    "customizations": {
+        // Manage access to other repositories within your codespace
+        "codespaces": {},
+        // Configure properties specific to VS Code.
+        "vscode": {
+            // Set *default* container specific settings.json values on container create.
+            "settings": {
+                "git.confirmSync": false,
+                "git.autofetch": true,
+                "git.enableSmartCommit": true,
+                "explorer.compactFolders": false,
+                "explorer.sortOrder": "type",
+                "editor.formatOnSave": true,
+                "editor.formatOnPaste": true,
+                "files.trimFinalNewlines": true,
+                "files.trimTrailingWhitespace": true,
+                "files.associations": {
+                    "*.tfvars": "terraform"
+                },
+                "[json]": {
+                    "editor.defaultFormatter": "vscode.json-language-features"
+                },
+                "[markdown]": {
+                    "editor.wordWrap": "on",
+                    "editor.renderWhitespace": "all",
+                    "editor.acceptSuggestionOnEnter": "off"
+                }
+            },
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                "ms-vscode.powershell",
+                "ms-vscode.azurecli",
+                "ms-azuretools.vscode-bicep",
+                "HashiCorp.terraform",
+                "gruntfuggly.todo-tree",
+                "redhat.vscode-yaml", // YAML support
+                "eamodio.gitlens" // Git supercharged
+            ]
+        }
+    },
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+    // Use 'postCreateCommand' to run commands after the container is created.
+    "postCreateCommand": "uname -a",
+    // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+    "remoteUser": "vscode",
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers/features/azure-cli:1": {
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "lts"
+        },
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers/features/powershell:1": {
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers/features/terraform:1": {
+            "version": "1.3.3",
+            "tflint": "latest",
+            "terragrunt": "none"
+        }
+    }
+}

@@ -1,0 +1,48 @@
+formatter: "md" # this is required
+
+version: ">= 0.16.0, < 1.0.0"
+
+recursive:
+  enabled: true
+  path: examples
+
+content: |-
+  {{ .Header }}
+
+  ## Examples
+
+  ### Community
+
+  ```hcl
+  {{ include "examples/community/main.tf" }}
+  ```
+
+  {{ .Inputs }}
+
+  {{ .Outputs }}
+
+output:
+  mode: inject
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    <!-- END_TF_DOCS -->
+
+sort:
+  enabled: true
+  by: name
+
+settings:
+  anchor: true
+  color: true
+  default: true
+  description: false
+  escape: true
+  hide-empty: false
+  html: true
+  indent: 2
+  lockfile: true
+  read-comments: true
+  required: true
+  sensitive: true
+  type: true

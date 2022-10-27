@@ -1,0 +1,17 @@
+# Create Resource Group
+az group create \
+--name rg-scepman-dev-002 \
+--location "westeurope"
+
+# Deploy bicep template
+az deployment group create \
+--resource-group <resource-group-name> \
+--template-file <path-to-bicep>
+
+az deployment group create \
+--mode Complete \
+--resource-group rg-scepman-dev-002 \
+--template-file azure/main.bicep \
+--parameters storageAccountName=sttfscepmandev002 \
+--parameters principalIds='("37c3a850-f61c-4bd4-81d4-47ce349b6e8d",)' \
+--query properties.outputs.backendConfig.value
