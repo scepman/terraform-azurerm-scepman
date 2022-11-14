@@ -11,6 +11,12 @@ content: |-
 
   ## Examples
 
+  ### Quickstart Example
+
+  ```hcl
+  {{ include "examples/quickstart/main.tf" }}
+  ```
+
   ### Community
 
   ```hcl
