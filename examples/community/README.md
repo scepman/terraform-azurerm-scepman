@@ -8,7 +8,7 @@ Trial SCEPman deployment using local state
 
 Edit variables in our example `terraform.tfvars`
 
-Note: Folowing Azure Resource names must be globaly unique
+Note: Following Azure Resource names must be globaly unique
 
 - storage_account_name
 - key_vault_name

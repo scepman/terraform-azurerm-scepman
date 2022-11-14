@@ -13,7 +13,6 @@ variable "storage_account_name" {
   description = "Name of the storage account"
 }
 
-
 variable "service_plan_name" {
   type        = string
   description = "Name of the service plan"

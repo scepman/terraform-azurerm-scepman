@@ -20,14 +20,23 @@ provider "azurerm" {
 
 # Resources
 
+resource "azurerm_resource_group" "rg" {
+  name     = var.resource_group_name
+  location = var.location
+
+  tags = var.tags
+}
+
 module "scepman" {
-  source = "../.." # This is the local path to the module
-  # to use the terraform registry version comment the previous line and uncomment the 2 lines below
-  # source  = "glueckkanja-gab/scepman/azurerm"
-  # version = "specify_version_number"
+  # Option 1: Local module, use from local development
+  # source = "../.." # This is the local path to the module
+
+  # Option 2: Use the terraform registry version
+  source  = "glueckkanja-gab/scepman/azurerm"
+  # version = "0.1.0"
 
 
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
 
   storage_account_name = var.storage_account_name
