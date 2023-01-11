@@ -16,6 +16,7 @@ terraform {
 
 provider "azurerm" {
   features {}
+  partner_id = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
 }
 
 # Resources
