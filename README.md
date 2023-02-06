@@ -7,7 +7,7 @@ It is an Azure Web App providing the SCEP protocol and works directly with the M
 
 ## Prerequisites
 
-- Access to an **Azure subscription** (or Resource Group) with `Owner` RBAC Role assigned to Pricipal used for deployment
+- Access to an **Azure subscription** (or Resource Group) with `Owner` RBAC Role assigned to Principal used for deployment
 - Terraform environemnt - local, GitHub Codespaces or Dev Containers
 
 #### Local Environment:
