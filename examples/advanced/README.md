@@ -1,14 +1,21 @@
-# SCEPman - Quickstart deployment
+# SCEPman - Advanced deployment
 
-SCEPman deployment with reasonable defaults to get you started quickly
-
-This example deploys the free Community Edition, but you can upgrade your existing SCEPman instance to an Enterprise Edition later by adding your [license key](https://docs.scepman.com/advanced-configuration/application-settings/basics#appconfig-licensekey).
+SCEPman deployment with sophisticated configuration using local state
 
 ## Using this example with Terraform CLI
 
 ### Variables
 
-Edit the location variable in our example `terraform.tfvars` or use the default `westeurope`.
+Edit the variables in the example `terraform.tfvars`.
+
+Note: The following Azure Resource names must be globally unique:
+
+- `storage_account_name`
+- `key_vault_name`
+- `app_service_name_primary`
+- `app_service_name_certificate_master`
+
+If you want to deploy the Community Edition, leave `AppConfig:LicenseKey` in `app_settings_primary` as *trial*. If you want to deploy the Enterprise Edition, use your valid license key.
 
 ### Deploy Configuration
 
