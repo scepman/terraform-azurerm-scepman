@@ -30,7 +30,7 @@ resource "azurerm_key_vault" "vault" {
   location            = var.location
 
   tenant_id                 = data.azurerm_client_config.current.tenant_id
-  sku_name                  = "standard"
+  sku_name                  = "premium"
   enable_rbac_authorization = false
 
   enabled_for_disk_encryption     = false
