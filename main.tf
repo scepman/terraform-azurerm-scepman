@@ -30,7 +30,7 @@ resource "azurerm_key_vault" "vault" {
   location            = var.location
 
   tenant_id                 = data.azurerm_client_config.current.tenant_id
-  sku_name                  = "standard"
+  sku_name                  = "premium"
   enable_rbac_authorization = false
 
   enabled_for_disk_encryption     = false
@@ -158,56 +158,24 @@ resource "azurerm_key_vault_access_policy" "scepman" {
   object_id    = azurerm_windows_web_app.app.identity[0].principal_id
 
   certificate_permissions = [
-    "Backup",
-    "Create",
-    "Delete",
-    "DeleteIssuers",
     "Get",
-    "GetIssuers",
-    "Import",
     "List",
-    "ListIssuers",
-    "ManageContacts",
-    "ManageIssuers",
-    "Purge",
-    "Recover",
-    "Restore",
-    "SetIssuers",
-    "Update",
+    "Create",
+    "ManageContacts"
   ]
 
   key_permissions = [
-    "Backup",
-    "Create",
-    "Decrypt",
-    "Delete",
-    "Encrypt",
     "Get",
-    "Import",
-    "List",
-    "Purge",
-    "Recover",
-    "Restore",
-    "Sign",
+    "Create",
     "UnwrapKey",
-    "Update",
-    "Verify",
-    "WrapKey",
-    "Release",
-    "Rotate",
-    "GetRotationPolicy",
-    "SetRotationPolicy",
+    "Sign"
   ]
 
   secret_permissions = [
-    "Backup",
-    "Delete",
     "Get",
     "List",
-    "Purge",
-    "Recover",
-    "Restore",
     "Set",
+    "Delete"
   ]
 }
 
