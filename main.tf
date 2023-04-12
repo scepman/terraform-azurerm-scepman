@@ -165,6 +165,7 @@ resource "azurerm_key_vault_access_policy" "scepman" {
   ]
 
   key_permissions = [
+    "Get",
     "Create",
     "UnwrapKey",
     "Sign"
