@@ -81,7 +81,7 @@ locals {
     "AppConfig:BaseUrl"                           = format("https://%s.azurewebsites.net", var.app_service_name_primary)
     "AppConfig:AuthConfig:TenantId"               = data.azurerm_client_config.current.tenant_id
     "AppConfig:KeyVaultConfig:KeyVaultURL"        = azurerm_key_vault.vault.vault_uri
-    "AppConfig:AzureStorage:TableStorageEndpoint" = azurerm_storage_account.storage.primary_table_endpoint
+    "AppConfig:CertificateStorage:TableStorageEndpoint" = azurerm_storage_account.storage.primary_table_endpoint
   }
 
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
