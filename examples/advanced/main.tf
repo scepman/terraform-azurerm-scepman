@@ -33,7 +33,7 @@ module "scepman" {
   # source = "../.." # This is the local path to the module
 
   # Option 2: Use the terraform registry version
-  source  = "glueckkanja-gab/scepman/azurerm"
+  source = "glueckkanja-gab/scepman/azurerm"
   # version = "0.1.0"
 
 
@@ -42,6 +42,7 @@ module "scepman" {
 
   storage_account_name = var.storage_account_name
   key_vault_name       = var.key_vault_name
+  law_name             = var.law_name
 
   service_plan_name                   = var.service_plan_name
   app_service_name_primary            = var.app_service_name_primary
