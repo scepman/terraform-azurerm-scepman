@@ -1,3 +1,9 @@
+variable "organization_name" {
+  type        = string
+  default     = "my-org"
+  description = "Organization name (O=<my-org>)"
+}
+
 variable "location" {
   type        = string
   description = "Azure Region where the resources should be created"
@@ -33,6 +39,12 @@ variable "law_shared_key" {
 variable "service_plan_name" {
   type        = string
   description = "Name of the service plan"
+}
+
+variable "service_plan_sku" {
+  type        = string
+  default     = "S1"
+  description = "SKU for App Service Plan"
 }
 
 variable "service_plan_resource_id" {

@@ -76,7 +76,7 @@ resource "azurerm_service_plan" "plan" {
   location            = var.location
 
   os_type  = "Windows"
-  sku_name = "S1"
+  sku_name = var.service_plan_sku
 
   tags = var.tags
 }
@@ -98,7 +98,7 @@ locals {
     "AppConfig:KeyVaultConfig:RootCertificateConfig:CertificateName" = "SCEPman-Root-CA-V1",
     "AppConfig:KeyVaultConfig:RootCertificateConfig:KeyType"         = "RSA-HSM"
     "AppConfig:ValidityClockSkewMinutes"                             = "1440",
-    "AppConfig:KeyVaultConfig:RootCertificateConfig:Subject"         = format("CN=SCEPman-Root-CA-V1,OU=%s,O=\"my-org\"", data.azurerm_client_config.current.tenant_id)
+    "AppConfig:KeyVaultConfig:RootCertificateConfig:Subject"         = format("CN=SCEPman-Root-CA-V1,OU=%s,O=\"%s\"", data.azurerm_client_config.current.tenant_id, var.organization_name)
   }
 
   app_settings_primary_base = {
