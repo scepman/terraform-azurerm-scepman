@@ -102,7 +102,7 @@ locals {
   }
 
   app_settings_primary_base = {
-    "WEBSITE_RUN_FROM_PACKAGE"                          = format("%s/dist/Artifacts.zip", var.artifacts_repository_url)
+    "WEBSITE_RUN_FROM_PACKAGE"                          = var.artifacts_url_primary
     "AppConfig:BaseUrl"                                 = format("https://%s.azurewebsites.net", var.app_service_name_primary)
     "AppConfig:AuthConfig:TenantId"                     = data.azurerm_client_config.current.tenant_id
     "AppConfig:KeyVaultConfig:KeyVaultURL"              = azurerm_key_vault.vault.vault_uri
@@ -149,7 +149,7 @@ locals {
   app_settings_certificate_master_defaults = {}
 
   app_settings_certificate_master_base = {
-    "WEBSITE_RUN_FROM_PACKAGE"                    = format("%s/dist-certmaster/CertMaster-Artifacts.zip", var.artifacts_repository_url)
+    "WEBSITE_RUN_FROM_PACKAGE"                    = var.artifacts_url_certificate_master
     "AppConfig:AzureStorage:TableStorageEndpoint" = azurerm_storage_account.storage.primary_table_endpoint
     "AppConfig:SCEPman:URL"                       = format("https://%s", azurerm_windows_web_app.app.default_hostname)
     "AppConfig:AuthConfig:TenantId"               = data.azurerm_client_config.current.tenant_id

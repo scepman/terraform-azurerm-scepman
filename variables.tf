@@ -62,12 +62,17 @@ variable "tags" {
   description = "A mapping of tags to assign to the resource"
 }
 
-variable "artifacts_repository_url" {
+variable "artifacts_url_primary" {
   type        = string
-  default     = "https://raw.githubusercontent.com/scepman/install/master"
-  description = "URL of the repository containing the artifacts"
+  default     = "https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts.zip"
+  description = "URL of the artifacts for SCEPman"
 }
 
+variable "artifacts_url_certificate_master" {
+  type        = string
+  default     = "https://raw.githubusercontent.com/scepman/install/master/dist-certmaster/CertMaster-Artifacts.zip"
+  description = "URL of the artifacts for SCEPman Certificate Master"
+}
 variable "app_settings_primary" {
   type        = map(string)
   default     = {}
