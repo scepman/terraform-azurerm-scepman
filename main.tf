@@ -158,6 +158,15 @@ resource "azurerm_windows_web_app" "app" {
       condition     = local.app_settings_primary["AppConfig:KeyVaultConfig:RootCertificateConfig:KeyType"] == "RSA" || local.app_settings_primary["AppConfig:KeyVaultConfig:RootCertificateConfig:KeyType"] == "RSA-HSM"
       error_message = "Possible values are 'RSA' or 'RSA-HSM'"
     }
+
+    ignore_changes = [
+      app_settings["AppConfig:AuthConfig:ApplicationId"],
+      app_settings["AppConfig:AuthConfig:ManagedIdentityEnabledForWebsiteHostname"],
+      app_settings["AppConfig:AuthConfig:ManagedIdentityEnabledOnUnixTime"],
+      app_settings["AppConfig:AuthConfig:ManagedIdentityPermissionLevel"],
+      app_settings["AppConfig:CertMaster:URL"],
+      sticky_settings
+    ]
   }
 }
 
@@ -213,6 +222,17 @@ resource "azurerm_windows_web_app" "app_cm" {
         retention_in_mb   = var.app_service_retention_in_mb
       }
     }
+  }
+
+  lifecycle {
+
+    ignore_changes = [
+      app_settings["AppConfig:AuthConfig:ApplicationId"],
+      app_settings["AppConfig:AuthConfig:ManagedIdentityEnabledOnUnixTime"],
+      app_settings["AppConfig:AuthConfig:ManagedIdentityPermissionLevel"],
+      app_settings["AppConfig:AuthConfig:SCEPmanAPIScope"],
+      sticky_settings
+    ]
   }
 
 }
