@@ -13,6 +13,22 @@ variable "storage_account_name" {
   description = "Name of the storage account"
 }
 
+variable "law_name" {
+  type        = string
+  description = "Name for the Log Analytics Workspace"
+}
+
+variable "law_workspace_id" {
+  type        = string
+  default     = null
+  description = "Workspace ID of the Log Analytics Workspace"
+}
+
+variable "law_shared_key" {
+  type        = string
+  default     = null
+  description = "Primary or secondary shared key of Log Analytics Workspace"
+}
 
 variable "service_plan_name" {
   type        = string

@@ -43,6 +43,29 @@ resource "azurerm_key_vault" "vault" {
   tags = var.tags
 }
 
+# Log Analytics Workspace
+
+resource "azurerm_log_analytics_workspace" "law" {
+  count = (var.law_workspace_id == null || var.law_shared_key == null) ? 1 : 0
+
+  name                = var.law_name
+  resource_group_name = var.resource_group_name
+  location            = var.location
+
+  sku               = "PerGB2018"
+  retention_in_days = 30
+
+  tags = var.tags
+
+  lifecycle {
+    precondition {
+      condition     = (var.law_workspace_id != null && var.law_shared_key != null) || (var.law_workspace_id == null && var.law_shared_key == null)
+      error_message = "If you want to use your existing Log Analytics Wokrpsce, both 'law_workspace_id' AND 'law_shared_key' need to be set!"
+    }
+  }
+
+}
+
 # App Service Plan
 
 resource "azurerm_service_plan" "plan" {
@@ -62,6 +85,8 @@ resource "azurerm_service_plan" "plan" {
 
 locals {
   service_plan_resource_id = var.service_plan_resource_id != null ? var.service_plan_resource_id : azurerm_service_plan.plan[0].id
+  law_workspace_id         = var.law_workspace_id != null ? var.law_workspace_id : azurerm_log_analytics_workspace.law[0].workspace_id
+  law_shared_key           = var.law_shared_key != null ? var.law_shared_key : azurerm_log_analytics_workspace.law[0].primary_shared_key
 
   app_settings_primary_defaults = {
     "AppConfig:LicenseKey"                                           = "trial"
@@ -82,6 +107,8 @@ locals {
     "AppConfig:AuthConfig:TenantId"                     = data.azurerm_client_config.current.tenant_id
     "AppConfig:KeyVaultConfig:KeyVaultURL"              = azurerm_key_vault.vault.vault_uri
     "AppConfig:CertificateStorage:TableStorageEndpoint" = azurerm_storage_account.storage.primary_table_endpoint
+    "AppConfig:LoggingConfig:WorkspaceId"               = local.law_workspace_id
+    "AppConfig:LoggingConfig:SharedKey"                 = local.law_shared_key
   }
 
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
@@ -126,6 +153,8 @@ locals {
     "AppConfig:AzureStorage:TableStorageEndpoint" = azurerm_storage_account.storage.primary_table_endpoint
     "AppConfig:SCEPman:URL"                       = format("https://%s", azurerm_windows_web_app.app.default_hostname)
     "AppConfig:AuthConfig:TenantId"               = data.azurerm_client_config.current.tenant_id
+    "AppConfig:LoggingConfig:WorkspaceId"         = local.law_workspace_id
+    "AppConfig:LoggingConfig:SharedKey"           = local.law_shared_key
   }
 
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
