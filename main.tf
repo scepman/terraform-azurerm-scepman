@@ -120,6 +120,7 @@ resource "azurerm_windows_web_app" "app" {
   name                = var.app_service_name_primary
   resource_group_name = var.resource_group_name
   location            = var.location
+  https_only          = false
 
   service_plan_id = local.service_plan_resource_id
 
@@ -127,11 +128,29 @@ resource "azurerm_windows_web_app" "app" {
     type = "SystemAssigned"
   }
 
-  site_config {}
+  site_config {
+    health_check_path = "/probe"
+  }
 
   app_settings = local.app_settings_primary
 
   tags = var.tags
+
+  logs {
+    detailed_error_messages = var.app_service_logs_detailed_error_messages
+    failed_request_tracing  = var.app_service_logs_failed_request_tracing
+
+    application_logs {
+      file_system_level = var.app_service_application_logs_file_system_level
+    }
+
+    http_logs {
+      file_system {
+        retention_in_days = var.app_service_retention_in_days
+        retention_in_mb   = var.app_service_retention_in_mb
+      }
+    }
+  }
 
   lifecycle {
     # CA Key type must be specific
@@ -172,11 +191,30 @@ resource "azurerm_windows_web_app" "app_cm" {
     type = "SystemAssigned"
   }
 
-  site_config {}
+  site_config {
+    health_check_path = "/probe"
+  }
 
   app_settings = local.app_settings_certificate_master
 
   tags = var.tags
+
+  logs {
+    detailed_error_messages = var.app_service_logs_detailed_error_messages
+    failed_request_tracing  = var.app_service_logs_failed_request_tracing
+
+    application_logs {
+      file_system_level = var.app_service_application_logs_file_system_level
+    }
+
+    http_logs {
+      file_system {
+        retention_in_days = var.app_service_retention_in_days
+        retention_in_mb   = var.app_service_retention_in_mb
+      }
+    }
+  }
+
 }
 
 # Key Vault Access Policy

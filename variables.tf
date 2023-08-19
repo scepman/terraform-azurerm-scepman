@@ -53,6 +53,36 @@ variable "service_plan_resource_id" {
   description = "Resource ID of the service plan"
 }
 
+variable "app_service_retention_in_days" {
+  type        = number
+  default     = 180
+  description = "How many days http_logs should be kept"
+}
+
+variable "app_service_retention_in_mb" {
+  type        = number
+  default     = 35
+  description = "Max file size of http_logs"
+}
+
+variable "app_service_logs_detailed_error_messages" {
+  type        = bool
+  default     = true
+  description = "Detailed Error messages of the app service"
+}
+
+variable "app_service_logs_failed_request_tracing" {
+  type        = bool
+  default     = false
+  description = "Trace failed requests"
+}
+
+variable "app_service_application_logs_file_system_level" {
+  type        = string
+  default     = "Error"
+  description = "Application Log level for file_system"
+}
+
 variable "app_service_name_primary" {
   type        = string
   description = "Name of the primary app service"
