@@ -165,6 +165,20 @@ resource "azurerm_windows_web_app" "app" {
       app_settings["AppConfig:AuthConfig:ManagedIdentityEnabledOnUnixTime"],
       app_settings["AppConfig:AuthConfig:ManagedIdentityPermissionLevel"],
       app_settings["AppConfig:CertMaster:URL"],
+      app_settings["APPINSIGHTS_INSTRUMENTATIONKEY"],
+      app_settings["APPINSIGHTS_PROFILERFEATURE_VERSION"],
+      app_settings["APPINSIGHTS_SNAPSHOTFEATURE_VERSION"],
+      app_settings["APPLICATIONINSIGHTS_CONNECTION_STRING"],
+      app_settings["ApplicationInsightsAgent_EXTENSION_VERSION"],
+      app_settings["DiagnosticServices_EXTENSION_VERSION"],
+      app_settings["InstrumentationEngine_EXTENSION_VERSION"],
+      app_settings["SnapshotDebugger_EXTENSION_VERSION"],
+      app_settings["WEBSITE_HEALTHCHECK_MAXPINGFAILURES"],
+      app_settings["XDT_MicrosoftApplicationInsights_BaseExtensions"],
+      app_settings["XDT_MicrosoftApplicationInsights_Java"],
+      app_settings["XDT_MicrosoftApplicationInsights_Mode"],
+      app_settings["XDT_MicrosoftApplicationInsights_NodeJS"],
+      app_settings["XDT_MicrosoftApplicationInsights_PreemptSdk"],
       sticky_settings
     ]
   }
@@ -231,6 +245,20 @@ resource "azurerm_windows_web_app" "app_cm" {
       app_settings["AppConfig:AuthConfig:ManagedIdentityEnabledOnUnixTime"],
       app_settings["AppConfig:AuthConfig:ManagedIdentityPermissionLevel"],
       app_settings["AppConfig:AuthConfig:SCEPmanAPIScope"],
+      app_settings["APPINSIGHTS_INSTRUMENTATIONKEY"],
+      app_settings["APPINSIGHTS_PROFILERFEATURE_VERSION"],
+      app_settings["APPINSIGHTS_SNAPSHOTFEATURE_VERSION"],
+      app_settings["APPLICATIONINSIGHTS_CONNECTION_STRING"],
+      app_settings["ApplicationInsightsAgent_EXTENSION_VERSION"],
+      app_settings["DiagnosticServices_EXTENSION_VERSION"],
+      app_settings["InstrumentationEngine_EXTENSION_VERSION"],
+      app_settings["SnapshotDebugger_EXTENSION_VERSION"],
+      app_settings["WEBSITE_HEALTHCHECK_MAXPINGFAILURES"],
+      app_settings["XDT_MicrosoftApplicationInsights_BaseExtensions"],
+      app_settings["XDT_MicrosoftApplicationInsights_Java"],
+      app_settings["XDT_MicrosoftApplicationInsights_Mode"],
+      app_settings["XDT_MicrosoftApplicationInsights_NodeJS"],
+      app_settings["XDT_MicrosoftApplicationInsights_PreemptSdk"],
       sticky_settings
     ]
   }
