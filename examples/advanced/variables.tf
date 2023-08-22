@@ -24,16 +24,10 @@ variable "law_name" {
   description = "Name for the Log Analytics Workspace"
 }
 
-variable "law_workspace_id" {
+variable "law_resource_group_name" {
   type        = string
   default     = null
-  description = "Workspace ID of the Log Analytics Workspace"
-}
-
-variable "law_shared_key" {
-  type        = string
-  default     = null
-  description = "Primary or secondary shared key of Log Analytics Workspace"
+  description = "Ressource Group of existing Log Analytics Workspace"
 }
 
 variable "service_plan_name" {
@@ -53,9 +47,15 @@ variable "service_plan_resource_id" {
   description = "Resource ID of the service plan"
 }
 
+variable "enable_application_insights" {
+  type        = bool
+  default     = false
+  description = "Create and connect Application Insights for the App services. NOTE: This will prevent Terraform from beeing able to destroy the ressource group!"
+}
+
 variable "app_service_retention_in_days" {
   type        = number
-  default     = 180
+  default     = 0
   description = "How many days http_logs should be kept"
 }
 
