@@ -130,7 +130,7 @@ locals {
   }
 
 # if app insight exists, add to app settings
-  app_settings_primary_app_insight = length(azurerm_application_insights.scepman-primary) > 0 ? {
+  app_settings_primary_app_insights = length(azurerm_application_insights.scepman-primary) > 0 ? {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                  = azurerm_application_insights.scepman-primary[0].instrumentation_key
     "APPLICATIONINSIGHTS_CONNECTION_STRING"           = azurerm_application_insights.scepman-primary[0].connection_string
     "APPINSIGHTS_PROFILERFEATURE_VERSION"             = "1.0.0"
@@ -157,7 +157,7 @@ locals {
   }
 
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
-  app_settings_primary = merge(local.app_settings_primary_defaults, var.app_settings_primary, local.app_settings_primary_app_insight, local.app_settings_primary_base)
+  app_settings_primary = merge(local.app_settings_primary_defaults, var.app_settings_primary, local.app_settings_primary_app_insights, local.app_settings_primary_base)
 
 }
 
@@ -223,7 +223,7 @@ locals {
   app_settings_certificate_master_defaults = {}
 
 # if app insight exists, add to app settings
-  app_settings_certificate_master_app_insight = length(azurerm_application_insights.scepman-cm) > 0 ? {
+  app_settings_certificate_master_app_insights = length(azurerm_application_insights.scepman-cm) > 0 ? {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                  = azurerm_application_insights.scepman-cm[0].instrumentation_key
     "APPLICATIONINSIGHTS_CONNECTION_STRING"           = azurerm_application_insights.scepman-cm[0].connection_string
     "APPINSIGHTS_PROFILERFEATURE_VERSION"             = "1.0.0"
@@ -249,7 +249,7 @@ locals {
   }
 
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
-  app_settings_certificate_master = merge(local.app_settings_certificate_master_defaults, var.app_settings_certificate_master, local.app_settings_certificate_master_app_insight, local.app_settings_certificate_master_base)
+  app_settings_certificate_master = merge(local.app_settings_certificate_master_defaults, var.app_settings_certificate_master, local.app_settings_certificate_master_app_insights, local.app_settings_certificate_master_base)
 }
 
 resource "azurerm_windows_web_app" "app_cm" {
