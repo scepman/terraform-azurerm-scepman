@@ -50,12 +50,12 @@ variable "service_plan_resource_id" {
 variable "enable_application_insights" {
   type        = bool
   default     = false
-  description = "Create and connect Application Insights for the App services. NOTE: This will prevent Terraform from beeing able to destroy the ressource group!"
+  description = "Should Terraform create and connect Application Insights for the App services? NOTE: This will prevent Terraform from beeing able to destroy the ressource group!"
 }
 
 variable "app_service_retention_in_days" {
   type        = number
-  default     = 0
+  default     = 90
   description = "How many days http_logs should be kept"
 }
 
