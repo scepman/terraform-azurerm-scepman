@@ -129,7 +129,7 @@ locals {
     "AppConfig:KeyVaultConfig:RootCertificateConfig:Subject"         = format("CN=SCEPman-Root-CA-V1,OU=%s,O=\"%s\"", data.azurerm_client_config.current.tenant_id, var.organization_name)
   }
 
-# if app insight exists, add to app settings
+  # if app insight exists, add to app settings
   app_settings_primary_app_insights = length(azurerm_application_insights.scepman-primary) > 0 ? {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                  = azurerm_application_insights.scepman-primary[0].instrumentation_key
     "APPLICATIONINSIGHTS_CONNECTION_STRING"           = azurerm_application_insights.scepman-primary[0].connection_string
@@ -175,6 +175,11 @@ resource "azurerm_windows_web_app" "app" {
 
   site_config {
     health_check_path = "/probe"
+    use_32_bit_worker = false
+    application_stack {
+      current_stack  = "dotnet"
+      dotnet_version = "v6.0"
+    }
   }
 
   app_settings = local.app_settings_primary
@@ -222,7 +227,7 @@ locals {
 
   app_settings_certificate_master_defaults = {}
 
-# if app insight exists, add to app settings
+  # if app insight exists, add to app settings
   app_settings_certificate_master_app_insights = length(azurerm_application_insights.scepman-cm) > 0 ? {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                  = azurerm_application_insights.scepman-cm[0].instrumentation_key
     "APPLICATIONINSIGHTS_CONNECTION_STRING"           = azurerm_application_insights.scepman-cm[0].connection_string
@@ -265,6 +270,11 @@ resource "azurerm_windows_web_app" "app_cm" {
 
   site_config {
     health_check_path = "/probe"
+    use_32_bit_worker = false
+    application_stack {
+      current_stack  = "dotnet"
+      dotnet_version = "v6.0"
+    }
   }
 
   app_settings = local.app_settings_certificate_master
