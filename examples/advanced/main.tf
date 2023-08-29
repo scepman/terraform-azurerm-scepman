@@ -36,7 +36,7 @@ module "scepman" {
   source = "glueckkanja-gab/scepman/azurerm"
   # version = "0.1.0"
 
-organization_name = var.organization_name
+  organization_name = var.organization_name
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
 
