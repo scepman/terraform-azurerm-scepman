@@ -11,6 +11,8 @@ service_plan_sku                    = "s1"
 app_service_name_primary            = "app-scepman-dev-025"
 app_service_name_certificate_master = "app-scepmancm-dev-025"
 
+enable_application_insights = false
+
 tags = {}
 
 app_settings_primary = {
