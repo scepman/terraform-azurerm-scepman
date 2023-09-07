@@ -9,7 +9,7 @@ terraform {
   }
   backend "local" {}
 
-  required_version = "~> 1.3.3"
+  required_version = ">= 1.3"
 }
 
 # Provider configuration
@@ -36,7 +36,7 @@ module "scepman" {
   source = "glueckkanja-gab/scepman/azurerm"
   # version = "0.1.0"
 
-  organization_name = var.organization_name
+  organization_name   = var.organization_name
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
 
