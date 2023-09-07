@@ -49,7 +49,7 @@ terraform {
   }
   backend "local" {}
 
-  required_version = "~> 1.3.3"
+  required_version = ">= 1.3"
 }
 
 # Provider configuration

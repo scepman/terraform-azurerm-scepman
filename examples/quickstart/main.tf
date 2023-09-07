@@ -9,7 +9,7 @@ terraform {
   }
   backend "local" {}
 
-  required_version = "~> 1.3.3"
+  required_version = ">= 1.3"
 }
 
 # Provider configuration
@@ -34,7 +34,7 @@ locals {
   unique_key = substr(sha256(format("%s%s", data.azurerm_client_config.current.subscription_id, var.resource_group_name)), 0, 6)
 
   storage_account_name = format("stscepman%s", local.unique_key)
-  key_vault_name = format("kv-scepman-%s", local.unique_key)
+  key_vault_name       = format("kv-scepman-%s", local.unique_key)
 
   service_plan_name                   = format("asp-scepman-%s", local.unique_key)
   app_service_name_primary            = format("app-scepman-%s", local.unique_key)
@@ -46,7 +46,7 @@ module "scepman" {
   # source = "../.." # This is the local path to the module
 
   # Option 2: Use the terraform registry version
-  source  = "glueckkanja-gab/scepman/azurerm"
+  source = "glueckkanja-gab/scepman/azurerm"
   # version = "0.1.0"
 
 
