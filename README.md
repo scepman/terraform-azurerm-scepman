@@ -35,7 +35,7 @@ Visit [containers.dev](https://containers.dev) for more information
 
 ### Advanced
 
-For more informations how to deploy the following example, see [README](examples/advanced/README.md)
+For more informations how to deploy the following example, see the [Advanced Example Documentation](examples/advanced/).
 
 ```hcl
 # Version requirements
