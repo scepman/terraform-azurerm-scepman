@@ -1,13 +1,67 @@
 terraform {
   required_providers {
     azurerm = {
-      source = "hashicorp/azurerm"
+      source  = "hashicorp/azurerm"
+      version = ">= 3.102.0"
     }
   }
   required_version = ">= 1.3"
 }
 
 data "azurerm_client_config" "current" {}
+
+# vnet and subnet for internal communication
+resource "azurerm_virtual_network" "vnet-scepman" {
+  name                = var.vnet_name
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  address_space       = var.vnet_address_space
+}
+
+resource "azurerm_subnet" "subnet-endpoints" {
+  name                 = var.subnet_endpoints_name
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.vnet-scepman.name
+  address_prefixes     = [cidrsubnet(var.vnet_address_space[0], 1, 1)]
+}
+
+resource "azurerm_subnet" "subnet-appservices" {
+  name                 = var.subnet_appservices_name
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.vnet-scepman.name
+  address_prefixes     = [cidrsubnet(var.vnet_address_space[0], 1, 0)]
+  delegation {
+    name = "delegation"
+    service_delegation {
+      actions = ["Microsoft.Network/virtualNetworks/subnets/action", ]
+      name    = "Microsoft.Web/serverFarms"
+    }
+  }
+}
+
+resource "azurerm_private_dns_zone" "dnsprivatezone-kv" {
+  name                = "privatelink.vaultcore.azure.net"
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-kv" {
+  name                  = "dnszonelink-kv"
+  resource_group_name   = var.resource_group_name
+  private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone-kv.name
+  virtual_network_id    = azurerm_virtual_network.vnet-scepman.id
+}
+
+resource "azurerm_private_dns_zone" "dnsprivatezone-sts" {
+  name                = "privatelink.table.core.windows.net"
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-sts" {
+  name                  = "dnszonelink-sts"
+  resource_group_name   = var.resource_group_name
+  private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone-sts.name
+  virtual_network_id    = azurerm_virtual_network.vnet-scepman.id
+}
 
 # Storage Account
 
@@ -16,10 +70,39 @@ resource "azurerm_storage_account" "storage" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
+  public_network_access_enabled = true
+
+  network_rules {
+    default_action             = "Deny"
+    ip_rules                   = []
+    virtual_network_subnet_ids = []
+    bypass                     = ["None"]
+  }
+
   account_tier             = "Standard"
   account_replication_type = "LRS"
 
   tags = var.tags
+}
+
+# Private Endpoint for Storage Account
+resource "azurerm_private_endpoint" "storage_pe" {
+  name                = "pep-sts-scepman"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = azurerm_subnet.subnet-endpoints.id
+
+  private_dns_zone_group {
+    name                 = "privatednszonegroup"
+    private_dns_zone_ids = [azurerm_private_dns_zone.dnsprivatezone-sts.id]
+  }
+
+  private_service_connection {
+    name                           = "storageconnection"
+    private_connection_resource_id = azurerm_storage_account.storage.id
+    subresource_names              = ["table"]
+    is_manual_connection           = false
+  }
 }
 
 # Key Vault
@@ -37,10 +120,32 @@ resource "azurerm_key_vault" "vault" {
   enabled_for_deployment          = false
   enabled_for_template_deployment = false
 
+  public_network_access_enabled = false
+
   soft_delete_retention_days = 7
   purge_protection_enabled   = true
 
   tags = var.tags
+}
+
+# Private Endpoint for Key Vault
+resource "azurerm_private_endpoint" "key_vault_pe" {
+  name                = "pep-kv-scepman"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  subnet_id           = azurerm_subnet.subnet-endpoints.id
+
+  private_dns_zone_group {
+    name                 = "privatednszonegroup"
+    private_dns_zone_ids = [azurerm_private_dns_zone.dnsprivatezone-kv.id]
+  }
+
+  private_service_connection {
+    name                           = "keyvaultconnection"
+    private_connection_resource_id = azurerm_key_vault.vault.id
+    subresource_names              = ["vault"]
+    is_manual_connection           = false
+  }
 }
 
 
@@ -162,10 +267,11 @@ locals {
 }
 
 resource "azurerm_windows_web_app" "app" {
-  name                = var.app_service_name_primary
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  https_only          = false
+  name                      = var.app_service_name_primary
+  resource_group_name       = var.resource_group_name
+  location                  = var.location
+  https_only                = false
+  virtual_network_subnet_id = azurerm_subnet.subnet-appservices.id
 
   service_plan_id = local.service_plan_resource_id
 
@@ -178,7 +284,7 @@ resource "azurerm_windows_web_app" "app" {
     use_32_bit_worker = false
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v6.0"
+      dotnet_version = "v8.0"
     }
   }
 
@@ -258,9 +364,10 @@ locals {
 }
 
 resource "azurerm_windows_web_app" "app_cm" {
-  name                = var.app_service_name_certificate_master
-  resource_group_name = var.resource_group_name
-  location            = var.location
+  name                      = var.app_service_name_certificate_master
+  resource_group_name       = var.resource_group_name
+  location                  = var.location
+  virtual_network_subnet_id = azurerm_subnet.subnet-appservices.id
 
   service_plan_id = local.service_plan_resource_id
 
@@ -273,7 +380,7 @@ resource "azurerm_windows_web_app" "app_cm" {
     use_32_bit_worker = false
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v6.0"
+      dotnet_version = "v8.0"
     }
   }
 
