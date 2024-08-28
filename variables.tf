@@ -106,7 +106,7 @@ variable "vnet_name" {
 
 variable "vnet_address_space" {
   type        = list(any)
-  default     = ["10.255.255.0/24"]
+  default     = ["10.158.200.0/24"]
   description = "Address-Space of the VNET"
 }
 

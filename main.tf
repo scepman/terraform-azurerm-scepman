@@ -22,14 +22,14 @@ resource "azurerm_subnet" "subnet-endpoints" {
   name                 = var.subnet_endpoints_name
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.vnet-scepman.name
-  address_prefixes     = [cidrsubnet(var.vnet_address_space[0], 1, 1)]
+  address_prefixes     = [cidrsubnet(var.vnet_address_space[0], 3, 1)]
 }
 
 resource "azurerm_subnet" "subnet-appservices" {
   name                 = var.subnet_appservices_name
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.vnet-scepman.name
-  address_prefixes     = [cidrsubnet(var.vnet_address_space[0], 1, 0)]
+  address_prefixes     = [cidrsubnet(var.vnet_address_space[0], 3, 0)]
   delegation {
     name = "delegation"
     service_delegation {
