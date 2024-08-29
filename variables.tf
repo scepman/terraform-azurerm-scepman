@@ -98,6 +98,30 @@ variable "key_vault_name" {
   description = "Name of the key vault"
 }
 
+variable "vnet_name" {
+  type        = string
+  default     = "vnet-scepman"
+  description = "Name of the VNET created for internal communication"
+}
+
+variable "vnet_address_space" {
+  type        = list(any)
+  default     = ["10.158.200.0/24"]
+  description = "Address-Space of the VNET"
+}
+
+variable "subnet_appservices_name" {
+  type        = string
+  default     = "snet-scepman-appservices"
+  description = "Name of the subnet created for integrating the App Services"
+}
+
+variable "subnet_endpoints_name" {
+  type        = string
+  default     = "snet-scepman-endpoints"
+  description = "Name of the subnet created for the other endpoints"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}

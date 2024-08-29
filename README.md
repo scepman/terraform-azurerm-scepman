@@ -44,7 +44,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "3.28.0"
+      version = ">= 3.102.0"
     }
   }
   backend "local" {}
@@ -108,6 +108,10 @@ module "scepman" {
 | <a name="input_law_name"></a> [law\_name](#input\_law\_name)                                                                                        | Name of the Log Analytics Workspace                                       | `string`      | n/a                                                                                                   |   yes    |
 | <a name="input_law_resource_group"></a> [law\_resource\_group](#input\_law\_resource\_group)                                                        | Resource Group of existing Log Analytics Workspace                        | `string`      | `null`                                                                                                |    no    |
 | <a name="input_key_vault_name"></a> [key\_vault\_name](#input\_key\_vault\_name)                                                                    | Name of the key vault                                                     | `string`      | n/a                                                                                                   |   yes    |
+| <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name)                                                                                     | Name of VNET created for internal communication                           | `string`      | vnet-scepman                                                                                          |    no    |
+| <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space)                                                        | Address-Space of the VNET (needs to be /27 or larger)                                                 | `list(any)`   | ["10.158.200.0/24"]                                                                                   |    no    |
+| <a name="input_subnet_appservices_name"></a> [subnet\_appservices\_name](#input\_subnet\_appservices\_name)                                         | Name of the subnet created for integrating the App Services               | `string`      | snet-scepman-appservices                                                                              |    no    |
+| <a name="input_subnet_endpoints_name"></a> [subnet\_endpoints\_name](#input\_subnet\_endpoints\_name)                                               | Name of the subnet created for the other endpoints                        | `string`      | snet-scepman-endpoints                                                                                |    no    |
 | <a name="input_location"></a> [location](#input\_location)                                                                                          | Azure Region where the resources should be created                        | `string`      | n/a                                                                                                   |   yes    |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)                                                     | Name of the resource group                                                | `string`      | n/a                                                                                                   |   yes    |
 | <a name="input_service_plan_name"></a> [service\_plan\_name](#input\_service\_plan\_name)                                                           | Name of the service plan                                                  | `string`      | n/a                                                                                                   |   yes    |
