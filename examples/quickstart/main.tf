@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "3.28.0"
+      version = ">= 3.102.0"
     }
   }
   backend "local" {}
@@ -17,6 +17,7 @@ terraform {
 provider "azurerm" {
   features {}
   partner_id = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
+  subscription_id = var.subscription_id
 }
 
 # Resources
@@ -39,14 +40,15 @@ locals {
   service_plan_name                   = format("asp-scepman-%s", local.unique_key)
   app_service_name_primary            = format("app-scepman-%s", local.unique_key)
   app_service_name_certificate_master = format("app-scepman-cm-%s", local.unique_key)
+  law_name                            = format("log-scepman-%s", local.unique_key)
 }
 
 module "scepman" {
   # Option 1: Local module, use from local development
-  # source = "../.." # This is the local path to the module
+  source = "../.." # This is the local path to the module
 
   # Option 2: Use the terraform registry version
-  source = "glueckkanja-gab/scepman/azurerm"
+  #source = "glueckkanja-gab/scepman/azurerm"
   # version = "0.1.0"
 
 
@@ -59,6 +61,7 @@ module "scepman" {
   service_plan_name                   = local.service_plan_name
   app_service_name_primary            = local.app_service_name_primary
   app_service_name_certificate_master = local.app_service_name_certificate_master
+  law_name                            = local.law_name
 
   tags = var.tags
 }

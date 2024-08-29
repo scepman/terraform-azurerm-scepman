@@ -15,3 +15,7 @@ variable "tags" {
   description = "A mapping of tags to assign to the resource"
 }
 
+variable "subscription_id" {
+  description = "The Subscription ID for the Azure account."
+  type        = string
+}
