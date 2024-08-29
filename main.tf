@@ -281,6 +281,7 @@ resource "azurerm_windows_web_app" "app" {
 
   site_config {
     health_check_path = "/probe"
+    health_check_eviction_time_in_min = 10
     use_32_bit_worker = false
     application_stack {
       current_stack  = "dotnet"
@@ -377,6 +378,7 @@ resource "azurerm_windows_web_app" "app_cm" {
 
   site_config {
     health_check_path = "/probe"
+    health_check_eviction_time_in_min = 10
     use_32_bit_worker = false
     application_stack {
       current_stack  = "dotnet"
