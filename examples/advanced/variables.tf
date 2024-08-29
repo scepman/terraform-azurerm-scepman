@@ -1,3 +1,8 @@
+variable "subscription_id" {
+  description = "The Subscription ID for the Azure account."
+  type        = string
+}
+
 variable "organization_name" {
   type        = string
   default     = "my-org"
