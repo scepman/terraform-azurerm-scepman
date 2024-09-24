@@ -48,7 +48,7 @@ module "scepman" {
   source = "../.." # This is the local path to the module
 
   # Option 2: Use the terraform registry version
-  #source = "glueckkanja-gab/scepman/azurerm"
+  #source = "scepman/scepman/azurerm"
   # version = "0.1.0"
 
 

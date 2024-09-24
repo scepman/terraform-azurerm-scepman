@@ -1,8 +1,8 @@
 
 > [!IMPORTANT]  
-> This Repo and the associated Terraform Module has moved!  
-> Repo: https://github.com/scepman/terraform-azurerm-scepman  
-> Terraform Module: [scepman/scepman/azurerm](https://registry.terraform.io/modules/scepman/scepman/azurerm/latest)  
+> This Repo/Module was moved to another GitHub Org.  
+> If you have previously used glueckkanja-gab/scepman/azurerm as source, please switch to the new name:  
+> [scepman/scepman/azurerm](https://registry.terraform.io/modules/scepman/scepman/azurerm/latest)  
 
 # SCEPman - Certificates Simplified
 
@@ -79,7 +79,7 @@ module "scepman" {
   # source = "../.." # This is the local path to the module
 
   # Option 2: Use the terraform registry version
-  source = "glueckkanja-gab/scepman/azurerm"
+  source = "scepman/scepman/azurerm"
   # version = "0.1.0"
 
 
