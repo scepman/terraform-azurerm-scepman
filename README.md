@@ -1,3 +1,9 @@
+
+> [!IMPORTANT]  
+> This Repo and the associated Terraform Module has moved!  
+> Repo: https://github.com/scepman/terraform-azurerm-scepman  
+> Terraform Module: [scepman/scepman/azurerm](https://registry.terraform.io/modules/scepman/scepman/azurerm/latest)  
+
 # SCEPman - Certificates Simplified
 
 [SCEPman Docs](https://docs.scepman.com)
