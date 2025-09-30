@@ -5,9 +5,9 @@ resource "azurerm_key_vault" "vault" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
-  tenant_id                 = data.azurerm_client_config.current.tenant_id
-  sku_name                  = "premium"
-  enable_rbac_authorization = var.key_vault_use_rbac
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "premium"
+  rbac_authorization_enabled = var.key_vault_use_rbac
 
   enabled_for_disk_encryption     = false
   enabled_for_deployment          = false
@@ -32,7 +32,7 @@ locals {
 
 # Key Vault Access Policy
 resource "azurerm_key_vault_access_policy" "scepman" {
-  count = azurerm_key_vault.vault.enable_rbac_authorization ? 0 : 1
+  count = azurerm_key_vault.vault.rbac_authorization_enabled ? 0 : 1
 
   key_vault_id = azurerm_key_vault.vault.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
@@ -61,7 +61,7 @@ resource "azurerm_key_vault_access_policy" "scepman" {
 }
 
 resource "azurerm_role_assignment" "kv_roles" {
-  for_each = azurerm_key_vault.vault.enable_rbac_authorization ? local.key_vault_roles : {}
+  for_each = azurerm_key_vault.vault.rbac_authorization_enabled ? local.key_vault_roles : {}
 
   scope                = azurerm_key_vault.vault.id
   role_definition_name = each.key

@@ -30,6 +30,75 @@ variable "storage_account_replication_type" {
   }
 }
 
+variable "storage_account_public_network_access_enabled" {
+  type        = bool
+  default     = false
+  description = "Allow public network access to the storage account. Default disables external access to rely on private endpoints."
+}
+
+variable "storage_account_trusted_services_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable trusted Microsoft services to bypass storage account network rules."
+}
+
+variable "storage_account_allow_nested_items_to_be_public" {
+  type        = bool
+  default     = false
+  description = "Allow nested items (containers/directories) to inherit public access."
+}
+
+variable "storage_account_min_tls_version" {
+  type        = string
+  default     = "TLS1_2"
+  description = "Minimum TLS version for the storage account endpoint."
+
+  validation {
+    condition     = contains(["TLS1_0", "TLS1_1", "TLS1_2", "TLS1_3"], var.storage_account_min_tls_version)
+    error_message = "Storage account minimum TLS version must be one of: TLS1_0, TLS1_1, TLS1_2, TLS1_3."
+  }
+}
+
+variable "storage_account_shared_access_key_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable shared access key authentication for the storage account. Default is false to enforce more secure authentication methods."
+}
+
+variable "storage_account_sas_expiration_period" {
+  type        = string
+  default     = "1.00:00:00"
+  description = "Default expiration period applied to user delegation and service SAS tokens in d.hh:mm:ss format."
+}
+
+variable "storage_account_blob_soft_delete_retention_days" {
+  type        = number
+  default     = 7
+  description = "Retention in days for blob soft delete. Set to 0 to keep soft delete disabled."
+
+  validation {
+    condition     = var.storage_account_blob_soft_delete_retention_days >= 0 && var.storage_account_blob_soft_delete_retention_days <= 365
+    error_message = "Blob soft delete retention must be between 0 and 365 days."
+  }
+}
+
+variable "storage_account_container_soft_delete_retention_days" {
+  type        = number
+  default     = 7
+  description = "Retention in days for container soft delete. Set to 0 to keep soft delete disabled."
+
+  validation {
+    condition     = var.storage_account_container_soft_delete_retention_days >= 0 && var.storage_account_container_soft_delete_retention_days <= 365
+    error_message = "Container soft delete retention must be between 0 and 365 days."
+  }
+}
+
+variable "storage_account_managed_identity_enabled" {
+  type        = bool
+  default     = false
+  description = "Assign a system managed identity to the storage account to support Customer Managed Keys."
+}
+
 variable "law_name" {
   type        = string
   description = "Name for the Log Analytics Workspace"

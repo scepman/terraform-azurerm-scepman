@@ -17,6 +17,20 @@ Note: The following Azure Resource names must be globally unique:
 
 If you want to deploy the Community Edition, leave `AppConfig:LicenseKey` in `app_settings_primary` as *trial*. If you want to deploy the Enterprise Edition, use your valid license key.
 
+> **Azure AD authentication required**: Shared keys are disabled by default. Set `storage_use_azuread = true` (or export `ARM_STORAGE_USE_AZUREAD=true`) in your provider configuration and assign the deploying identity the `Storage Queue Data Contributor` and `Storage Table Data Contributor` roles on the storage account.
+
+### Storage hardening options
+
+The module now disables storage account public network access and shared key authentication by default. You can override the behavior through the following optional variables when needed:
+
+- `storage_account_public_network_access_enabled`
+- `storage_account_trusted_services_enabled`
+- `storage_account_min_tls_version`
+- `storage_account_sas_expiration_period`
+- `storage_account_blob_soft_delete_retention_days`
+- `storage_account_container_soft_delete_retention_days`
+- `storage_account_managed_identity_enabled`
+
 ### Deploy Configuration
 
 ```hcl

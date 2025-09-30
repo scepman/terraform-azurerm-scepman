@@ -16,8 +16,9 @@ terraform {
 
 provider "azurerm" {
   features {}
-  partner_id = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
-  subscription_id = var.subscription_id
+  storage_use_azuread = true
+  partner_id          = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
+  subscription_id     = var.subscription_id
 }
 
 # Resources
@@ -45,10 +46,10 @@ locals {
 
 module "scepman" {
   # Option 1: Local module, use from local development
-  source = "../.." # This is the local path to the module
+  # source = "../.." # This is the local path to the module
 
   # Option 2: Use the terraform registry version
-  #source = "scepman/scepman/azurerm"
+  source = "scepman/scepman/azurerm"
   # version = "0.1.0"
 
 

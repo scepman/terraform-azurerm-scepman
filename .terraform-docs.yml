@@ -3,8 +3,7 @@ formatter: "md" # this is required
 version: ">= 0.16.0, < 1.0.0"
 
 recursive:
-  enabled: true
-  path: examples
+  enabled: false
 
 content: |-
   {{ .Header }}
@@ -17,10 +16,10 @@ content: |-
   {{ include "examples/quickstart/main.tf" }}
   ```
 
-  ### Community
+  ### Advanced Example
 
   ```hcl
-  {{ include "examples/community/main.tf" }}
+  {{ include "examples/advanced/main.tf" }}
   ```
 
   {{ .Inputs }}

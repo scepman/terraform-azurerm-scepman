@@ -6,7 +6,7 @@ variable "location" {
 variable "resource_group_name" {
   type        = string
   description = "Name of the resource group"
-  default = "rg-scepman-quickstart-001"
+  default     = "rg-scepman-quickstart-001"
 }
 
 variable "tags" {

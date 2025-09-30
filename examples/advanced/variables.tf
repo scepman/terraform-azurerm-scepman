@@ -24,6 +24,60 @@ variable "storage_account_name" {
   description = "Name of the storage account"
 }
 
+variable "storage_account_public_network_access_enabled" {
+  type        = bool
+  default     = false
+  description = "Allow public network access to the storage account."
+}
+
+variable "storage_account_trusted_services_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable trusted Microsoft services to bypass storage account network rules."
+}
+
+variable "storage_account_min_tls_version" {
+  type        = string
+  default     = "TLS1_2"
+  description = "Minimum TLS version for the storage account endpoint."
+}
+
+variable "storage_account_shared_access_key_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable shared access key authentication for the storage account. Default is false to enforce more secure authentication methods."
+}
+
+variable "storage_account_allow_nested_items_to_be_public" {
+  type        = bool
+  default     = false
+  description = "Allow nested items (containers) to inherit public access."
+}
+
+variable "storage_account_sas_expiration_period" {
+  type        = string
+  default     = "1.00:00:00"
+  description = "Expiration period applied to SAS tokens in d.hh:mm:ss format."
+}
+
+variable "storage_account_blob_soft_delete_retention_days" {
+  type        = number
+  default     = 7
+  description = "Retention in days for blob soft delete. Set to 0 to keep soft delete disabled."
+}
+
+variable "storage_account_container_soft_delete_retention_days" {
+  type        = number
+  default     = 7
+  description = "Retention in days for container soft delete. Set to 0 to keep soft delete disabled."
+}
+
+variable "storage_account_managed_identity_enabled" {
+  type        = bool
+  default     = false
+  description = "Assign a system managed identity to the storage account for Customer Managed Keys."
+}
+
 variable "law_name" {
   type        = string
   description = "Name for the Log Analytics Workspace"
