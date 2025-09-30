@@ -2,7 +2,7 @@ subscription_id = "00000000-0000-0000-0000-000000000000"
 
 organization_name   = "my-org"
 location            = "westeurope"
-resource_group_name = "rg-scepman-dev-02520"
+resource_group_name = "rg-scepman-dev-025"
 
 storage_account_name                     = "stscepmandev025"
 key_vault_name                           = "kv-scepman-prod-025"

@@ -21,7 +21,7 @@ resource "azurerm_storage_account" "storage" {
   account_replication_type = var.storage_account_replication_type
 
   dynamic "sas_policy" {
-    for_each = var.storage_account_sas_expiration_period != null ? [var.storage_account_sas_expiration_period] : []
+    for_each = [var.storage_account_sas_expiration_period]
     content {
       expiration_period = sas_policy.value
     }
