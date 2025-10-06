@@ -107,8 +107,10 @@ locals {
     "AppConfig:LoggingConfig:SharedKey"                 = local.law_shared_key
   }
 
+  // Normalize input app settings to use ":" as separator for easier merging
+  normalized_app_settings_primary = { for k, v in var.app_settings_primary : replace(k, "__", ":") => v }
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
-  merged_app_settings_primary = merge(local.app_settings_primary_defaults, var.app_settings_primary, local.app_settings_primary_app_insights, local.app_settings_primary_base)
+  merged_app_settings_primary = merge(local.app_settings_primary_defaults, local.normalized_app_settings_primary, local.app_settings_primary_app_insights, local.app_settings_primary_base)
   // If OS is linux, replace ":" with"__" in app settings, if OS is windows (NOT linux), replace "__" with ":" in app settings
   app_settings_primary = lower(var.service_plan_os_type) == "linux" ? { for k, v in local.merged_app_settings_primary : replace(k, ":", "__") => v } : { for k, v in local.merged_app_settings_primary : replace(k, "__", ":") => v }
 
@@ -147,8 +149,10 @@ locals {
     "AppConfig:LoggingConfig:SharedKey"           = local.law_shared_key
   }
 
+  // Normalize input app settings to use ":" as separator for easier merging
+  normalized_app_settings_certificate_master = { for k, v in var.app_settings_certificate_master : replace(k, "__", ":") => v }
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
-  merged_app_settings_certificate_master = merge(local.app_settings_certificate_master_defaults, var.app_settings_certificate_master, local.app_settings_certificate_master_app_insights, local.app_settings_certificate_master_base)
+  merged_app_settings_certificate_master = merge(local.app_settings_certificate_master_defaults, local.normalized_app_settings_certificate_master, local.app_settings_certificate_master_app_insights, local.app_settings_certificate_master_base)
   // If OS is linux, replace ":" with"__" in app settings, if OS is windows (NOT linux), replace "__" with ":" in app settings
   app_settings_certificate_master = lower(var.service_plan_os_type) == "linux" ? { for k, v in local.merged_app_settings_certificate_master : replace(k, ":", "__") => v } : { for k, v in local.merged_app_settings_certificate_master : replace(k, "__", ":") => v }
 }
