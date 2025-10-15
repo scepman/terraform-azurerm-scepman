@@ -5,7 +5,7 @@ terraform {
       version = ">= 4.8"
     }
   }
-  required_version = ">= 1.3"
+  required_version = ">= 1.9"
 }
 
 data "azurerm_client_config" "current" {}
@@ -35,14 +35,14 @@ resource "azurerm_log_analytics_workspace" "law" {
 locals {
   # Prioritize workspace details from cross-subscription input, then data lookup, and finally the workspace created by this module.
   law_details = var.law_cross_subscription_details != null ? var.law_cross_subscription_details : length(data.azurerm_log_analytics_workspace.existing-law) > 0 ? {
-      id           = data.azurerm_log_analytics_workspace.existing-law[0].id
-      workspace_id = data.azurerm_log_analytics_workspace.existing-law[0].workspace_id
-      shared_key   = data.azurerm_log_analytics_workspace.existing-law[0].primary_shared_key
+    id           = data.azurerm_log_analytics_workspace.existing-law[0].id
+    workspace_id = data.azurerm_log_analytics_workspace.existing-law[0].workspace_id
+    shared_key   = data.azurerm_log_analytics_workspace.existing-law[0].primary_shared_key
     } : {
-      id           = azurerm_log_analytics_workspace.law[0].id
-      workspace_id = azurerm_log_analytics_workspace.law[0].workspace_id
-      shared_key   = azurerm_log_analytics_workspace.law[0].primary_shared_key
-    }
+    id           = azurerm_log_analytics_workspace.law[0].id
+    workspace_id = azurerm_log_analytics_workspace.law[0].workspace_id
+    shared_key   = azurerm_log_analytics_workspace.law[0].primary_shared_key
+  }
 
   law_id           = local.law_details.id
   law_workspace_id = local.law_details.workspace_id
