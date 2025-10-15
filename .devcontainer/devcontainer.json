@@ -46,8 +46,7 @@
                 "HashiCorp.terraform",
                 "gruntfuggly.todo-tree",
                 "ms-azuretools.vscode-azureresourcegroups",
-                "redhat.vscode-yaml", // YAML support
-                "eamodio.gitlens" // Git supercharged
+                "redhat.vscode-yaml" // YAML support
             ]
         }
     },
@@ -62,12 +61,6 @@
             "version": "latest"
         },
         "ghcr.io/devcontainers/features/azure-cli:1": {
-            "version": "latest"
-        },
-        "ghcr.io/devcontainers/features/node:1": {
-            "version": "lts"
-        },
-        "ghcr.io/devcontainers/features/python:1": {
             "version": "latest"
         },
         "ghcr.io/devcontainers/features/powershell:1": {

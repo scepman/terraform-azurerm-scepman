@@ -12,15 +12,15 @@ data "azurerm_client_config" "current" {}
 
 # Log Analytics Workspace
 
-# Get exisiting Log Analytics Workspace if law_resource_group_name is defined
+# Get exisiting Log Analytics Workspace if law_resource_group_name is defined and no cross subscription details are provided
 data "azurerm_log_analytics_workspace" "existing-law" {
-  count               = var.law_resource_group_name != null ? 1 : 0
+  count               = (var.law_resource_group_name != null && var.law_name != null && var.law_cross_subscription_details == null) ? 1 : 0
   name                = var.law_name
   resource_group_name = var.law_resource_group_name
 }
 
 resource "azurerm_log_analytics_workspace" "law" {
-  count = length(data.azurerm_log_analytics_workspace.existing-law) > 0 ? 0 : 1
+  count = (var.law_cross_subscription_details == null && length(data.azurerm_log_analytics_workspace.existing-law) == 0) ? 1 : 0
 
   name                = var.law_name
   resource_group_name = var.resource_group_name
@@ -33,9 +33,20 @@ resource "azurerm_log_analytics_workspace" "law" {
 }
 
 locals {
-  law_id           = length(data.azurerm_log_analytics_workspace.existing-law) > 0 ? data.azurerm_log_analytics_workspace.existing-law[0].id : azurerm_log_analytics_workspace.law[0].id
-  law_workspace_id = length(data.azurerm_log_analytics_workspace.existing-law) > 0 ? data.azurerm_log_analytics_workspace.existing-law[0].workspace_id : azurerm_log_analytics_workspace.law[0].workspace_id
-  law_shared_key   = length(data.azurerm_log_analytics_workspace.existing-law) > 0 ? data.azurerm_log_analytics_workspace.existing-law[0].primary_shared_key : azurerm_log_analytics_workspace.law[0].primary_shared_key
+  # Prioritize workspace details from cross-subscription input, then data lookup, and finally the workspace created by this module.
+  law_details = var.law_cross_subscription_details != null ? var.law_cross_subscription_details : length(data.azurerm_log_analytics_workspace.existing-law) > 0 ? {
+      id           = data.azurerm_log_analytics_workspace.existing-law[0].id
+      workspace_id = data.azurerm_log_analytics_workspace.existing-law[0].workspace_id
+      shared_key   = data.azurerm_log_analytics_workspace.existing-law[0].primary_shared_key
+    } : {
+      id           = azurerm_log_analytics_workspace.law[0].id
+      workspace_id = azurerm_log_analytics_workspace.law[0].workspace_id
+      shared_key   = azurerm_log_analytics_workspace.law[0].primary_shared_key
+    }
+
+  law_id           = local.law_details.id
+  law_workspace_id = local.law_details.workspace_id
+  law_shared_key   = local.law_details.shared_key
 }
 
 # Application Insights

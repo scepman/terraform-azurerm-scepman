@@ -101,13 +101,45 @@ variable "storage_account_managed_identity_enabled" {
 
 variable "law_name" {
   type        = string
+  default     = null
   description = "Name for the Log Analytics Workspace"
 }
 
 variable "law_resource_group_name" {
   type        = string
   default     = null
-  description = "Ressource Group of existing Log Analytics Workspace"
+  description = "Resource Group of existing Log Analytics Workspace"
+}
+
+variable "law_cross_subscription_details" {
+  type = object({
+    id           = string
+    workspace_id = string
+    shared_key   = string
+  })
+  default     = null
+  nullable    = true
+  description = "Used to reference an existing Log Analytics Workspace located in another subscription. Use this instead of law_name and law_resource_group_name."
+  validation {
+    condition     = var.law_cross_subscription_details == null || can(regex("^/subscriptions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/resourceGroups/[^/]+/providers/Microsoft\\.OperationalInsights/workspaces/[^/]+$", var.law_cross_subscription_details.id))
+    error_message = "When provided, law_cross_subscription_details.id must be a valid Log Analytics workspace resource ID."
+  }
+  validation {
+    condition     = var.law_cross_subscription_details == null || can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", var.law_cross_subscription_details.workspace_id))
+    error_message = "When provided, law_cross_subscription_details.workspace_id must be a UUID."
+  }
+  validation {
+    condition     = var.law_cross_subscription_details == null || length(trimspace(var.law_cross_subscription_details.shared_key)) > 0
+    error_message = "When provided, law_cross_subscription_details.shared_key must be non-empty."
+  }
+  validation {
+    condition     = var.law_cross_subscription_details == null || (var.law_name == null && var.law_resource_group_name == null)
+    error_message = "When law_cross_subscription_details is provided, leave law_name and law_resource_group_name unset."
+  }
+  validation {
+    condition     = var.law_cross_subscription_details != null || var.law_name != null
+    error_message = "Set law_name when using workspaces from the current subscription."
+  }
 }
 
 variable "service_plan_name" {
