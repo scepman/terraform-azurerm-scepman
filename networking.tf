@@ -34,7 +34,7 @@ resource "azurerm_private_dns_zone" "dnsprivatezone-kv" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-kv" {
-  name                  = "dnszonelink-kv"
+  name                  = azurerm_virtual_network.vnet-scepman.name
   resource_group_name   = var.resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone-kv.name
   virtual_network_id    = azurerm_virtual_network.vnet-scepman.id
@@ -46,7 +46,7 @@ resource "azurerm_private_dns_zone" "dnsprivatezone-sts" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-sts" {
-  name                  = "dnszonelink-sts"
+  name                  = azurerm_virtual_network.vnet-scepman.name
   resource_group_name   = var.resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone-sts.name
   virtual_network_id    = azurerm_virtual_network.vnet-scepman.id
@@ -55,7 +55,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-sts" {
 
 # Private Endpoint for Storage Account
 resource "azurerm_private_endpoint" "storage_pe" {
-  name                = "pep-sts-scepman"
+  name                = "pe-${azurerm_storage_account.storage.name}"
   location            = var.location
   resource_group_name = var.resource_group_name
   subnet_id           = azurerm_subnet.subnet-endpoints.id
@@ -76,7 +76,7 @@ resource "azurerm_private_endpoint" "storage_pe" {
 
 # Private Endpoint for Key Vault
 resource "azurerm_private_endpoint" "key_vault_pe" {
-  name                = "pep-kv-scepman"
+  name                = "pe-${azurerm_key_vault.vault.name}"
   location            = var.location
   resource_group_name = var.resource_group_name
   subnet_id           = azurerm_subnet.subnet-endpoints.id
