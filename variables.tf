@@ -221,6 +221,12 @@ variable "app_service_minimum_tls_version_scepman" {
   }
 }
 
+variable "app_service_https_only_certificate_master" {
+  type        = bool
+  default     = false
+  description = "Enable HTTPS only for the certificate master app service"
+}
+
 variable "app_service_minimum_tls_version_certificate_master" {
   type        = string
   default     = "1.3"

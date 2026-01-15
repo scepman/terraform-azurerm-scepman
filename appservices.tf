@@ -110,7 +110,7 @@ locals {
   // Normalize input app settings to use ":" as separator for easier merging
   normalized_app_settings_primary = { for k, v in var.app_settings_primary : replace(k, "__", ":") => v }
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
-  merged_app_settings_primary = merge(local.app_settings_primary_defaults, local.normalized_app_settings_primary, local.app_settings_primary_app_insights, local.app_settings_primary_base)
+  merged_app_settings_primary = merge(local.app_settings_primary_defaults, local.app_settings_primary_app_insights, local.app_settings_primary_base, local.normalized_app_settings_primary)
   // If OS is linux, replace ":" with"__" in app settings, if OS is windows (NOT linux), replace "__" with ":" in app settings
   app_settings_primary = lower(var.service_plan_os_type) == "linux" ? { for k, v in local.merged_app_settings_primary : replace(k, ":", "__") => v } : { for k, v in local.merged_app_settings_primary : replace(k, "__", ":") => v }
 
@@ -152,7 +152,7 @@ locals {
   // Normalize input app settings to use ":" as separator for easier merging
   normalized_app_settings_certificate_master = { for k, v in var.app_settings_certificate_master : replace(k, "__", ":") => v }
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
-  merged_app_settings_certificate_master = merge(local.app_settings_certificate_master_defaults, local.normalized_app_settings_certificate_master, local.app_settings_certificate_master_app_insights, local.app_settings_certificate_master_base)
+  merged_app_settings_certificate_master = merge(local.app_settings_certificate_master_defaults, local.app_settings_certificate_master_app_insights, local.app_settings_certificate_master_base, local.normalized_app_settings_certificate_master)
   // If OS is linux, replace ":" with"__" in app settings, if OS is windows (NOT linux), replace "__" with ":" in app settings
   app_settings_certificate_master = lower(var.service_plan_os_type) == "linux" ? { for k, v in local.merged_app_settings_certificate_master : replace(k, ":", "__") => v } : { for k, v in local.merged_app_settings_certificate_master : replace(k, "__", ":") => v }
 }
@@ -231,6 +231,7 @@ resource "azurerm_windows_web_app" "app_cm" {
   name                      = var.app_service_name_certificate_master
   resource_group_name       = var.resource_group_name
   location                  = var.location
+  https_only                = var.app_service_https_only_certificate_master
   virtual_network_subnet_id = azurerm_subnet.subnet-appservices.id
 
   service_plan_id = local.service_plan_resource_id
