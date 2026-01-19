@@ -28,6 +28,36 @@ resource "azurerm_subnet" "subnet-appservices" {
   }
 }
 
+# Network Security Group for endpoints subnet
+resource "azurerm_network_security_group" "nsg-endpoints" {
+  name                = var.nsg_endpoints_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  tags = var.tags
+}
+
+# Network Security Group for app services subnet
+resource "azurerm_network_security_group" "nsg-appservices" {
+  name                = var.nsg_appservices_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  tags = var.tags
+}
+
+# Associate NSG with endpoints subnet
+resource "azurerm_subnet_network_security_group_association" "nsg-endpoints-association" {
+  subnet_id                 = azurerm_subnet.subnet-endpoints.id
+  network_security_group_id = azurerm_network_security_group.nsg-endpoints.id
+}
+
+# Associate NSG with app services subnet
+resource "azurerm_subnet_network_security_group_association" "nsg-appservices-association" {
+  subnet_id                 = azurerm_subnet.subnet-appservices.id
+  network_security_group_id = azurerm_network_security_group.nsg-appservices.id
+}
+
 resource "azurerm_private_dns_zone" "dnsprivatezone-kv" {
   name                = "privatelink.vaultcore.azure.net"
   resource_group_name = var.resource_group_name

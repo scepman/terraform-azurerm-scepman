@@ -37,4 +37,5 @@ override.tf.json
 terraform.rc
 
 # Ignore development and testing files
-dev.*
+dev.*.terraform/
+.terraform.lock.hcl

@@ -272,6 +272,18 @@ variable "subnet_endpoints_name" {
   description = "Name of the subnet created for the other endpoints"
 }
 
+variable "nsg_endpoints_name" {
+  type        = string
+  default     = "nsg-scepman-endpoints"
+  description = "Name of the Network Security Group for the endpoints subnet"
+}
+
+variable "nsg_appservices_name" {
+  type        = string
+  default     = "nsg-scepman-appservices"
+  description = "Name of the Network Security Group for the app services subnet"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}
