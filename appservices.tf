@@ -231,7 +231,7 @@ resource "azurerm_windows_web_app" "app_cm" {
   name                      = var.app_service_name_certificate_master
   resource_group_name       = var.resource_group_name
   location                  = var.location
-  https_only                = var.app_service_https_only_certificate_master
+  https_only                = true
   virtual_network_subnet_id = azurerm_subnet.subnet-appservices.id
 
   service_plan_id = local.service_plan_resource_id
