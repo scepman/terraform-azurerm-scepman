@@ -41,9 +41,80 @@ Visit [containers.dev](https://containers.dev) for more information
 
 ## Examples
 
-### Advanced
+### Quickstart Example
 
-For more informations how to deploy the following example, see the [Advanced Example Documentation](examples/advanced/).
+```hcl
+# Version requirements
+
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 4.42"
+    }
+  }
+  backend "local" {}
+
+  required_version = ">= 1.9"
+}
+
+# Provider configuration
+
+provider "azurerm" {
+  features {}
+  storage_use_azuread = true
+  partner_id          = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
+  subscription_id     = var.subscription_id
+}
+
+# Resources
+
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_resource_group" "rg" {
+  name     = var.resource_group_name
+  location = var.location
+
+  tags = var.tags
+}
+
+locals {
+  unique_key = substr(sha256(format("%s%s", data.azurerm_client_config.current.subscription_id, var.resource_group_name)), 0, 6)
+
+  storage_account_name = format("stscepman%s", local.unique_key)
+  key_vault_name       = format("kv-scepman-%s", local.unique_key)
+
+  service_plan_name                   = format("asp-scepman-%s", local.unique_key)
+  app_service_name_primary            = format("app-scepman-%s", local.unique_key)
+  app_service_name_certificate_master = format("app-scepman-cm-%s", local.unique_key)
+  law_name                            = format("log-scepman-%s", local.unique_key)
+}
+
+module "scepman" {
+  # Option 1: Local module, use from local development
+  source = "../.." # This is the local path to the module
+
+  # Option 2: Use the terraform registry version
+  # source = "scepman/scepman/azurerm"
+  # version = "0.1.0"
+
+
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
+
+  storage_account_name = local.storage_account_name
+  key_vault_name       = local.key_vault_name
+
+  service_plan_name                   = local.service_plan_name
+  app_service_name_primary            = local.app_service_name_primary
+  app_service_name_certificate_master = local.app_service_name_certificate_master
+  law_name                            = local.law_name
+
+  tags = var.tags
+}
+```
+
+### Advanced Example
 
 ```hcl
 # Version requirements
@@ -109,43 +180,38 @@ module "scepman" {
 }
 ```
 
-To re-use an existing Log Analytics Workspace that lives in another subscription, provide its identifiers via `law_cross_subscription_details`:
-
-```hcl
-  law_cross_subscription_details = {
-    id           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-monitoring/providers/Microsoft.OperationalInsights/workspaces/law-central"
-    workspace_id = "00000000-0000-0000-0000-000000000000"
-    shared_key   = "redacted-primary-shared-key"
-  }
-```
-When you supply `law_cross_subscription_details`, omit both `law_name` and `law_resource_group_name`.
-
 ## Inputs
 
-| Name                                                                                                                                                | Description                                                               | Type          | Default                                                                                               | Required |
-| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------- | :------: |
-| <a name="input_app_service_name_certificate_master"></a> [app\_service\_name\_certificate\_master](#input\_app\_service\_name\_certificate\_master) | Name of the certificate master app service                                | `string`      | n/a                                                                                                   |   yes    |
-| <a name="input_app_service_name_primary"></a> [app\_service\_name\_primary](#input\_app\_service\_name\_primary)                                    | Name of the primary app service                                           | `string`      | n/a                                                                                                   |   yes    |
-| <a name="input_app_service_minimum_tls_version_scepman"></a> [app\_service\_minimum\_tls\_version\_scepman](#input\_app\_service\_minimum\_tls\_version\_scepman) | Minimum Inbound TLS Version for SCEPman core App Service                 | `string`      | `1.2`                                                                                                  |    no    |
-| <a name="input_app_service_minimum_tls_version_certificate_master"></a> [app\_service\_minimum\_tls\_version\_certificate\_master](#input\_app\_service\_minimum\_tls\_version\_certificate\_master) | Minimum Inbound TLS Version for Certificate Master App Service           | `string`      | `1.3`                                                                                                  |    no    |
-| <a name="input_app_settings_certificate_master"></a> [app\_settings\_certificate\_master](#input\_app\_settings\_certificate\_master)               | A mapping of app settings to assign to the certificate master app service | `map(string)` | `{}`                                                                                                  |    no    |
-| <a name="input_app_settings_primary"></a> [app\_settings\_primary](#input\_app\_settings\_primary)                                                  | A mapping of app settings to assign to the primary app service            | `map(string)` | `{}`                                                                                                  |    no    |
-| <a name="input_artifacts_url_primary"></a> [artifacts\_url\_primary](#input\_artifacts\_url\_primary)                                               | URL to the artifacts of the primary SCEPman Service                       | `string`      | `"https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts.zip"`                       |    no    |
-| <a name="input_artifacts_url_certificate_master"></a> [artifacts\_url\_certificate\_master](#input\_artifacts\_url\_certificate\_master)            | URL to the artifacts of the SCEPman certificate master                    | `string`      | `"https://raw.githubusercontent.com/scepman/install/master/dist-certmaster/CertMaster-Artifacts.zip"` |    no    |
-| <a name="input_law_name"></a> [law\_name](#input\_law\_name)                                                                                        | Name of the Log Analytics Workspace (required unless `law_cross_subscription_details` is provided) | `string`      | `null`                                                                                                |    no    |
-| <a name="input_law_resource_group"></a> [law\_resource\_group](#input\_law\_resource\_group)                                                        | Resource Group of existing Log Analytics Workspace                        | `string`      | `null`                                                                                                |    no    |
-| <a name="input_law_cross_subscription_details"></a> [law\_cross\_subscription\_details](#input\_law\_cross\_subscription\_details)                  | Details for an existing Log Analytics Workspace located in another subscription | `object({ id = string, workspace_id = string, shared_key = string })` | `null` |    no    |
-| <a name="input_key_vault_name"></a> [key\_vault\_name](#input\_key\_vault\_name)                                                                    | Name of the key vault                                                     | `string`      | n/a                                                                                                   |   yes    |
-| <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name)                                                                                     | Name of VNET created for internal communication                           | `string`      | vnet-scepman                                                                                          |    no    |
-| <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space)                                                        | Address-Space of the VNET (needs to be /27 or larger)                                                 | `list(any)`   | ["10.158.200.0/24"]                                                                                   |    no    |
-| <a name="input_subnet_appservices_name"></a> [subnet\_appservices\_name](#input\_subnet\_appservices\_name)                                         | Name of the subnet created for integrating the App Services               | `string`      | snet-scepman-appservices                                                                              |    no    |
-| <a name="input_subnet_endpoints_name"></a> [subnet\_endpoints\_name](#input\_subnet\_endpoints\_name)                                               | Name of the subnet created for the other endpoints                        | `string`      | snet-scepman-endpoints                                                                                |    no    |
-| <a name="input_location"></a> [location](#input\_location)                                                                                          | Azure Region where the resources should be created                        | `string`      | n/a                                                                                                   |   yes    |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)                                                     | Name of the resource group                                                | `string`      | n/a                                                                                                   |   yes    |
-| <a name="input_service_plan_name"></a> [service\_plan\_name](#input\_service\_plan\_name)                                                           | Name of the service plan                                                  | `string`      | n/a                                                                                                   |   yes    |
-| <a name="input_service_plan_os_type"></a> [service\_plan\_os\_type](#input\_service\_plan\_os\_type)                                                              | OS of the service plan. Either "Windows" or "Linux"                                                   | `string`      | `Windows`                                                                                                  |    no    |
-| <a name="input_service_plan_sku"></a> [service\_plan\_sku](#input\_service\_plan\_sku)                                                              | SKU of the service plan                                                   | `string`      | `S1`                                                                                                  |    no    |
-| <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id)                                    | Resource ID of the service plan                                           | `string`      | `null`                                                                                                |    no    |
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_app_service_application_logs_file_system_level"></a> [app\_service\_application\_logs\_file\_system\_level](#input\_app\_service\_application\_logs\_file\_system\_level) | Application Log level for file\_system | `string` | `"Error"` | no |
+| <a name="input_app_service_logs_detailed_error_messages"></a> [app\_service\_logs\_detailed\_error\_messages](#input\_app\_service\_logs\_detailed\_error\_messages) | Detailed Error messages of the app service | `bool` | `true` | no |
+| <a name="input_app_service_logs_failed_request_tracing"></a> [app\_service\_logs\_failed\_request\_tracing](#input\_app\_service\_logs\_failed\_request\_tracing) | Trace failed requests | `bool` | `false` | no |
+| <a name="input_app_service_minimum_tls_version_certificate_master"></a> [app\_service\_minimum\_tls\_version\_certificate\_master](#input\_app\_service\_minimum\_tls\_version\_certificate\_master) | Minimum Inbound TLS Version for Certificate Master App Service | `string` | `"1.3"` | no |
+| <a name="input_app_service_minimum_tls_version_scepman"></a> [app\_service\_minimum\_tls\_version\_scepman](#input\_app\_service\_minimum\_tls\_version\_scepman) | Minimum Inbound TLS Version for SCEPman core App Service | `string` | `"1.2"` | no |
+| <a name="input_app_service_name_certificate_master"></a> [app\_service\_name\_certificate\_master](#input\_app\_service\_name\_certificate\_master) | Name of the certificate master app service | `string` | n/a | yes |
+| <a name="input_app_service_name_primary"></a> [app\_service\_name\_primary](#input\_app\_service\_name\_primary) | Name of the primary app service | `string` | n/a | yes |
+| <a name="input_app_service_retention_in_days"></a> [app\_service\_retention\_in\_days](#input\_app\_service\_retention\_in\_days) | How many days http\_logs should be kept | `number` | `90` | no |
+| <a name="input_app_service_retention_in_mb"></a> [app\_service\_retention\_in\_mb](#input\_app\_service\_retention\_in\_mb) | Max file size of http\_logs | `number` | `35` | no |
+| <a name="input_app_settings_certificate_master"></a> [app\_settings\_certificate\_master](#input\_app\_settings\_certificate\_master) | A mapping of app settings to assign to the certificate master app service | `map(string)` | `{}` | no |
+| <a name="input_app_settings_primary"></a> [app\_settings\_primary](#input\_app\_settings\_primary) | A mapping of app settings to assign to the primary app service | `map(string)` | `{}` | no |
+| <a name="input_artifacts_url_certificate_master"></a> [artifacts\_url\_certificate\_master](#input\_artifacts\_url\_certificate\_master) | URL of the artifacts for SCEPman Certificate Master | `string` | `"https://raw.githubusercontent.com/scepman/install/master/dist-certmaster/CertMaster-Artifacts.zip"` | no |
+| <a name="input_artifacts_url_primary"></a> [artifacts\_url\_primary](#input\_artifacts\_url\_primary) | URL of the artifacts for SCEPman | `string` | `"https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts.zip"` | no |
+| <a name="input_enable_application_insights"></a> [enable\_application\_insights](#input\_enable\_application\_insights) | Should Terraform create and connect Application Insights for the App services? NOTE: This will prevent Terraform from beeing able to destroy the ressource group! | `bool` | `false` | no |
+| <a name="input_key_vault_name"></a> [key\_vault\_name](#input\_key\_vault\_name) | Name of the key vault | `string` | n/a | yes |
+| <a name="input_key_vault_use_rbac"></a> [key\_vault\_use\_rbac](#input\_key\_vault\_use\_rbac) | Use RBAC for the key vault or the older access policies | `bool` | `true` | no |
+| <a name="input_law_cross_subscription_details"></a> [law\_cross\_subscription\_details](#input\_law\_cross\_subscription\_details) | Used to reference an existing Log Analytics Workspace located in another subscription. Use this instead of law\_name and law\_resource\_group\_name. | <pre>object({<br/>    id           = string<br/>    workspace_id = string<br/>    shared_key   = string<br/>  })</pre> | `null` | no |
+| <a name="input_law_name"></a> [law\_name](#input\_law\_name) | Name for the Log Analytics Workspace | `string` | `null` | no |
+| <a name="input_law_resource_group_name"></a> [law\_resource\_group\_name](#input\_law\_resource\_group\_name) | Resource Group of existing Log Analytics Workspace | `string` | `null` | no |
+| <a name="input_location"></a> [location](#input\_location) | Azure Region where the resources should be created | `string` | n/a | yes |
+| <a name="input_nsg_appservices_name"></a> [nsg\_appservices\_name](#input\_nsg\_appservices\_name) | Name of the Network Security Group for the app services subnet | `string` | `"nsg-scepman-appservices"` | no |
+| <a name="input_nsg_endpoints_name"></a> [nsg\_endpoints\_name](#input\_nsg\_endpoints\_name) | Name of the Network Security Group for the endpoints subnet | `string` | `"nsg-scepman-endpoints"` | no |
+| <a name="input_organization_name"></a> [organization\_name](#input\_organization\_name) | Organization name (O=<my-org>) | `string` | `"my-org"` | no |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the resource group | `string` | n/a | yes |
+| <a name="input_service_plan_name"></a> [service\_plan\_name](#input\_service\_plan\_name) | Name of the service plan | `string` | n/a | yes |
+| <a name="input_service_plan_os_type"></a> [service\_plan\_os\_type](#input\_service\_plan\_os\_type) | The type of operating system to use for the app service plan. Possible values are 'Windows' or 'Linux'. | `string` | `"Windows"` | no |
+| <a name="input_service_plan_resource_id"></a> [service\_plan\_resource\_id](#input\_service\_plan\_resource\_id) | Resource ID of the service plan | `string` | `null` | no |
+| <a name="input_service_plan_sku"></a> [service\_plan\_sku](#input\_service\_plan\_sku) | SKU for App Service Plan | `string` | `"S1"` | no |
 | <a name="input_storage_account_allow_nested_items_to_be_public"></a> [storage\_account\_allow\_nested\_items\_to\_be\_public](#input\_storage\_account\_allow\_nested\_items\_to\_be\_public) | Allow nested items (containers/directories) to inherit public access. | `bool` | `false` | no |
 | <a name="input_storage_account_blob_soft_delete_retention_days"></a> [storage\_account\_blob\_soft\_delete\_retention\_days](#input\_storage\_account\_blob\_soft\_delete\_retention\_days) | Retention in days for blob soft delete. Set to 0 to keep soft delete disabled. | `number` | `7` | no |
 | <a name="input_storage_account_container_soft_delete_retention_days"></a> [storage\_account\_container\_soft\_delete\_retention\_days](#input\_storage\_account\_container\_soft\_delete\_retention\_days) | Retention in days for container soft delete. Set to 0 to keep soft delete disabled. | `number` | `7` | no |
@@ -157,22 +223,11 @@ When you supply `law_cross_subscription_details`, omit both `law_name` and `law_
 | <a name="input_storage_account_sas_expiration_period"></a> [storage\_account\_sas\_expiration\_period](#input\_storage\_account\_sas\_expiration\_period) | Default expiration period applied to user delegation and service SAS tokens in d.hh:mm:ss format. | `string` | `"1.00:00:00"` | no |
 | <a name="input_storage_account_shared_access_key_enabled"></a> [storage\_account\_shared\_access\_key\_enabled](#input\_storage\_account\_shared\_access\_key\_enabled) | Enable shared access key authentication for the storage account. Default is false to enforce more secure authentication methods. | `bool` | `false` | no |
 | <a name="input_storage_account_trusted_services_enabled"></a> [storage\_account\_trusted\_services\_enabled](#input\_storage\_account\_trusted\_services\_enabled) | Enable trusted Microsoft services to bypass storage account network rules. | `bool` | `false` | no |
-| <a name="input_organization_name"></a> [organization\_name](#input\organization\_name)                                                              | Your organization name presented in the O= field of the root certificate  | `string`      | `my-org`                                                                                              |    no    |
-| <a name="input_key_vault_use_rbac"></a> [key\_vault\_use\_rbac](#input\_key\_vault\_use\_rbac)                                                        | Use RBAC for the key vault or the older access policies                   | `bool`        | `true`                                                                                                |    no    |
-| <a name="input_tags"></a> [tags](#input\_tags)                                                                                                      | A mapping of tags to assign to the resource                               | `map(string)` | `{}`                                                                                                  |    no    |
-
-
-### Optional App Service Logging settings
-
-| Name                                                                                                                                                                                     | Description                                                                                                                                      | Type     | Default   | Required |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | --------- | :------: |
-| <a name="input_enable_application_insights"></a> [enable\_application\_insights](#input\_enable\_application\_insights)                                                                  | Create and connect Application Insights for the App services. NOTE: This will prevent Terraform from beeing able to destroy the ressource group! | `bool`   | `false`   |    no    |
-| <a name="input_app_service_retention_in_days"></a> [app\_service\_retention\_in\_days](#input\_app\_service\_retention\_in\_days)                                                        | Retention of http_logs in days                                                                                                                   | `number` | `180`     |    no    |
-| <a name="input_app_service_retention_in_mb"></a> [app\_service\_retention\_in\_mb](#input\_app\_service\_retention\_in\_mb)                                                              | Retention of http_logs in mb                                                                                                                     | `number` | `35`      |    no    |
-| <a name="input_app_service_logs_detailed_error_messages"></a> [app\_service\_logs\_detailed\_error\_messages](#input\_app\_service\_logs\_detailed\_error\_messages)                     | Detailed Error messages of the app service                                                                                                       | `bool`   | `true`    |    no    |
-| <a name="input_app_service_logs_failed_request_tracing"></a> [app\_service\_logs\_failed\_request\_tracing](#input\_app\_service\_logs\_failed\_request\_tracing)                        | Trace failed requests                                                                                                                            | `bool`   | `false`   |    no    |
-| <a name="input_app_service_application_logs_file_system_level"></a> [app\_service\_application\_logs\_file\_system\_level](#input\_app\_service\_application\_logs\_file\_system\_level) | Application Log level for file_system                                                                                                            | `string` | `"Error"` |    no    |
-
+| <a name="input_subnet_appservices_name"></a> [subnet\_appservices\_name](#input\_subnet\_appservices\_name) | Name of the subnet created for integrating the App Services | `string` | `"snet-scepman-appservices"` | no |
+| <a name="input_subnet_endpoints_name"></a> [subnet\_endpoints\_name](#input\_subnet\_endpoints\_name) | Name of the subnet created for the other endpoints | `string` | `"snet-scepman-endpoints"` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | A mapping of tags to assign to the resource | `map(string)` | `{}` | no |
+| <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space) | Address-Space of the VNET | `list(any)` | <pre>[<br/>  "10.158.200.0/24"<br/>]</pre> | no |
+| <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name) | Name of the VNET created for internal communication | `string` | `"vnet-scepman"` | no |
 
 ## Outputs
 
