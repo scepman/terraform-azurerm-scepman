@@ -113,13 +113,21 @@ locals {
     "AppConfig:KeyVaultConfig:KeyVaultURL"              = azurerm_key_vault.vault.vault_uri
     "AppConfig:CertificateStorage:TableStorageEndpoint" = azurerm_storage_account.storage.primary_table_endpoint
     "AppConfig:LoggingConfig:WorkspaceId"               = local.law_workspace_id
-    "AppConfig:LoggingConfig:SharedKey"                 = local.law_shared_key
+  }
+
+  app_settings_primary_dcr = var.enable_dcr_log_ingestion ? {
+    "AppConfig:LoggingConfig:DataCollectionEndpointUri" = azurerm_monitor_data_collection_endpoint.scepman[0].logs_ingestion_endpoint
+    "AppConfig:LoggingConfig:RuleId"                    = azurerm_monitor_data_collection_rule.scepman[0].immutable_id
+  } : {}
+
+  app_settings_primary_legacy_log = var.enable_dcr_log_ingestion ? {} : {
+    "AppConfig:LoggingConfig:SharedKey" = local.law_shared_key
   }
 
   // Normalize input app settings to use ":" as separator for easier merging
   normalized_app_settings_primary = { for k, v in var.app_settings_primary : replace(k, "__", ":") => v }
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
-  merged_app_settings_primary = merge(local.app_settings_primary_defaults, local.normalized_app_settings_primary, local.app_settings_primary_app_insights, local.app_settings_primary_base, local.app_settings_primary_app)
+  merged_app_settings_primary = merge(local.app_settings_primary_defaults, local.normalized_app_settings_primary, local.app_settings_primary_app_insights, local.app_settings_primary_base, local.app_settings_primary_dcr, local.app_settings_primary_legacy_log, local.app_settings_primary_app)
   // If OS is linux, replace ":" with"__" in app settings, if OS is windows (NOT linux), replace "__" with ":" in app settings
   app_settings_primary = lower(var.service_plan_os_type) == "linux" ? { for k, v in local.merged_app_settings_primary : replace(k, ":", "__") => v } : { for k, v in local.merged_app_settings_primary : replace(k, "__", ":") => v }
 
@@ -166,7 +174,15 @@ locals {
     "AppConfig:SCEPman:URL"                       = local.app_settings_primary_url
     "AppConfig:AuthConfig:TenantId"               = data.azurerm_client_config.current.tenant_id
     "AppConfig:LoggingConfig:WorkspaceId"         = local.law_workspace_id
-    "AppConfig:LoggingConfig:SharedKey"           = local.law_shared_key
+  }
+
+  app_settings_certificate_master_dcr = var.enable_dcr_log_ingestion ? {
+    "AppConfig:LoggingConfig:DataCollectionEndpointUri" = azurerm_monitor_data_collection_endpoint.scepman[0].logs_ingestion_endpoint
+    "AppConfig:LoggingConfig:RuleId"                    = azurerm_monitor_data_collection_rule.scepman[0].immutable_id
+  } : {}
+
+  app_settings_certificate_master_legacy_log = var.enable_dcr_log_ingestion ? {} : {
+    "AppConfig:LoggingConfig:SharedKey" = local.law_shared_key
   }
 
   app_settings_certificate_master_app = var.manage_entra_apps ? {
@@ -187,7 +203,7 @@ locals {
   // Normalize input app settings to use ":" as separator for easier merging
   normalized_app_settings_certificate_master = { for k, v in var.app_settings_certificate_master : replace(k, "__", ":") => v }
   // Merge maps will overwrite first by last > default variables, custom variables, resource variables
-  merged_app_settings_certificate_master = merge(local.app_settings_certificate_master_defaults, local.normalized_app_settings_certificate_master, local.app_settings_certificate_master_app_insights, local.app_settings_certificate_master_base, local.app_settings_certificate_master_app)
+  merged_app_settings_certificate_master = merge(local.app_settings_certificate_master_defaults, local.normalized_app_settings_certificate_master, local.app_settings_certificate_master_app_insights, local.app_settings_certificate_master_base, local.app_settings_certificate_master_dcr, local.app_settings_certificate_master_legacy_log, local.app_settings_certificate_master_app)
   // If OS is linux, replace ":" with"__" in app settings, if OS is windows (NOT linux), replace "__" with ":" in app settings
   app_settings_certificate_master = lower(var.service_plan_os_type) == "linux" ? { for k, v in local.merged_app_settings_certificate_master : replace(k, ":", "__") => v } : { for k, v in local.merged_app_settings_certificate_master : replace(k, "__", ":") => v }
 
