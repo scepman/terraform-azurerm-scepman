@@ -255,7 +255,7 @@ variable "existing_subnet_appservices_id" {
   description = "Resource ID of an existing subnet delegated to Microsoft.Web/serverFarms for App Service VNet integration. When set, existing_subnet_endpoints_id must also be provided and the module will not create any networking resources (VNet, subnets, NSGs, Private DNS zones, or DNS zone links)."
 
   validation {
-    condition     = var.existing_subnet_appservices_id == null || can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_appservices_id))
+    condition     = var.existing_subnet_appservices_id == null || can(regex("^/subscriptions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_appservices_id))
     error_message = "Must be a valid Azure subnet resource ID."
   }
 }
@@ -267,7 +267,7 @@ variable "existing_subnet_endpoints_id" {
   description = "Resource ID of an existing subnet for Private Endpoints (Key Vault, Storage Account). When set, existing_subnet_appservices_id must also be provided and the module will not create any networking resources."
 
   validation {
-    condition     = var.existing_subnet_endpoints_id == null || can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_endpoints_id))
+    condition     = var.existing_subnet_endpoints_id == null || can(regex("^/subscriptions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_endpoints_id))
     error_message = "Must be a valid Azure subnet resource ID."
   }
 
