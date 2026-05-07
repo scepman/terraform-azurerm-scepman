@@ -70,6 +70,16 @@ content: |-
   - Private DNS zone configuration for `privatelink.vaultcore.azure.net` and `privatelink.table.core.windows.net`
   - NSG rules as needed
 
+  > **⚠️ Migrating an existing deployment to BYOS**
+  >
+  > If you switch an existing deployment from module-managed networking to BYOS, Terraform will plan to **destroy** the previously module-managed networking resources (VNet, NSGs, Private DNS zones, Private Endpoints). To avoid accidental outages:
+  >
+  > 1. Create or identify the replacement VNet/subnets/NSGs/Private DNS zones/Private Endpoints that will be managed outside this module.
+  > 2. Verify the replacement networking is fully configured and connected to the workload.
+  > 3. Remove the module-managed networking resources from Terraform state **before** setting the BYOS variables (e.g., `terraform state rm 'module.scepman.azurerm_virtual_network.vnet-scepman[0]'`).
+  > 4. Run `terraform state list` to identify exact resource addresses in your deployment, then remove only the networking resources you intend to manage externally.
+  > 5. After state cleanup, set the BYOS variables and run `terraform plan` to confirm no destruction is proposed.
+
   ```hcl
   module "network" {
     source = "Azure/avm-res-network-virtualnetwork/azurerm"
