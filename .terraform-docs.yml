@@ -32,6 +32,40 @@ content: |-
   ```
   When you supply `law_cross_subscription_details`, omit both `law_name` and `law_resource_group_name`.
 
+  ### Bring Your Own Subnet (BYOS)
+
+  For enterprise environments with centrally managed networking (e.g., using [Azure Verified Module for Virtual Networks](https://github.com/Azure/terraform-azurerm-avm-res-network-virtualnetwork)), you can pass existing subnet IDs instead of letting the module create its own networking resources.
+
+  When both `existing_subnet_appservices_id` and `existing_subnet_endpoints_id` are provided, the module skips creation of: VNet, subnets, NSGs, Private DNS zones, Private DNS zone links, and Private Endpoints. You are responsible for managing these externally, including:
+  - Subnet delegation (`Microsoft.Web/serverFarms`) on the App Services subnet
+  - Private Endpoints for Key Vault and Storage Account in the endpoints subnet
+  - Private DNS zone configuration for `privatelink.vaultcore.azure.net` and `privatelink.table.core.windows.net`
+  - NSG rules as needed
+
+  ```hcl
+  module "network" {
+    source = "Azure/avm-res-network-virtualnetwork/azurerm"
+    # ... creates vnet/subnets using IPAM or central networking team
+  }
+
+  module "scepman" {
+    source = "scepman/scepman/azurerm"
+
+    existing_subnet_appservices_id = module.network.subnets["snet-scepman-appservices"].resource_id
+    existing_subnet_endpoints_id   = module.network.subnets["snet-scepman-endpoints"].resource_id
+
+    resource_group_name             = azurerm_resource_group.rg.name
+    location                        = var.location
+    storage_account_name            = var.storage_account_name
+    key_vault_name                  = var.key_vault_name
+    law_name                        = var.law_name
+    service_plan_name               = var.service_plan_name
+    app_service_name_primary        = var.app_service_name_primary
+    app_service_name_certificate_master = var.app_service_name_certificate_master
+    manage_entra_apps               = true
+  }
+  ```
+
   {{ .Inputs }}
 
   {{ .Outputs }}

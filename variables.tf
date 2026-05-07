@@ -248,40 +248,69 @@ variable "key_vault_use_rbac" {
   description = "Use RBAC for the key vault or the older access policies"
 }
 
+variable "existing_subnet_appservices_id" {
+  type        = string
+  default     = null
+  nullable    = true
+  description = "Resource ID of an existing subnet delegated to Microsoft.Web/serverFarms for App Service VNet integration. When set, existing_subnet_endpoints_id must also be provided and the module will not create any networking resources (VNet, subnets, NSGs, Private DNS zones, or DNS zone links)."
+
+  validation {
+    condition     = var.existing_subnet_appservices_id == null || can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_appservices_id))
+    error_message = "Must be a valid Azure subnet resource ID."
+  }
+}
+
+variable "existing_subnet_endpoints_id" {
+  type        = string
+  default     = null
+  nullable    = true
+  description = "Resource ID of an existing subnet for Private Endpoints (Key Vault, Storage Account). When set, existing_subnet_appservices_id must also be provided and the module will not create any networking resources."
+
+  validation {
+    condition     = var.existing_subnet_endpoints_id == null || can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_endpoints_id))
+    error_message = "Must be a valid Azure subnet resource ID."
+  }
+
+  validation {
+    condition     = (var.existing_subnet_appservices_id == null) == (var.existing_subnet_endpoints_id == null)
+    error_message = "Both existing_subnet_appservices_id and existing_subnet_endpoints_id must be set together, or both must be null."
+  }
+}
+
 variable "vnet_name" {
   type        = string
   default     = "vnet-scepman"
-  description = "Name of the VNET created for internal communication"
+  description = "Name of the VNET created for internal communication. Ignored when existing_subnet_appservices_id is set."
 }
 
 variable "vnet_address_space" {
   type        = list(any)
   default     = ["10.158.200.0/24"]
-  description = "Address-Space of the VNET"
+  description = "Address-Space of the VNET. Ignored when existing_subnet_appservices_id is set."
 }
 
 variable "subnet_appservices_name" {
   type        = string
   default     = "snet-scepman-appservices"
-  description = "Name of the subnet created for integrating the App Services"
+  description = "Name of the subnet created for integrating the App Services. Ignored when existing_subnet_appservices_id is set."
 }
 
 variable "subnet_endpoints_name" {
   type        = string
   default     = "snet-scepman-endpoints"
-  description = "Name of the subnet created for the other endpoints"
+  description = "Name of the subnet created for the other endpoints. Ignored when existing_subnet_endpoints_id is set."
 }
 
 variable "nsg_endpoints_name" {
   type        = string
   default     = "nsg-scepman-endpoints"
-  description = "Name of the Network Security Group for the endpoints subnet"
+  description = "Name of the Network Security Group for the endpoints subnet. Ignored when existing_subnet_endpoints_id is set."
 }
 
 variable "nsg_appservices_name" {
   type        = string
   default     = "nsg-scepman-appservices"
-  description = "Name of the Network Security Group for the app services subnet"
+  description = "Name of the Network Security Group for the app services subnet. Ignored when existing_subnet_appservices_id is set."
 }
 
 variable "tags" {
