@@ -295,10 +295,34 @@ variable "subnet_appservices_name" {
   description = "Name of the subnet created for integrating the App Services. Ignored when existing_subnet_appservices_id is set."
 }
 
+variable "subnet_appservices_address_prefix" {
+  type        = string
+  default     = null
+  nullable    = true
+  description = "CIDR address prefix for the App Services subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet_address_space using cidrsubnet(). Ignored when existing_subnet_appservices_id is set."
+
+  validation {
+    condition     = var.subnet_appservices_address_prefix == null || can(cidrhost(var.subnet_appservices_address_prefix, 0))
+    error_message = "Must be a valid CIDR notation (e.g., 10.0.1.0/26)."
+  }
+}
+
 variable "subnet_endpoints_name" {
   type        = string
   default     = "snet-scepman-endpoints"
   description = "Name of the subnet created for the other endpoints. Ignored when existing_subnet_endpoints_id is set."
+}
+
+variable "subnet_endpoints_address_prefix" {
+  type        = string
+  default     = null
+  nullable    = true
+  description = "CIDR address prefix for the Private Endpoints subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet_address_space using cidrsubnet(). Ignored when existing_subnet_endpoints_id is set."
+
+  validation {
+    condition     = var.subnet_endpoints_address_prefix == null || can(cidrhost(var.subnet_endpoints_address_prefix, 0))
+    error_message = "Must be a valid CIDR notation (e.g., 10.0.2.0/26)."
+  }
 }
 
 variable "nsg_endpoints_name" {
