@@ -36,6 +36,94 @@ Visit [containers.dev](https://containers.dev) for more information
 - Optional inputs allow enabling trusted Microsoft services or soft-delete retention when required.
 - Because shared keys are disabled, Terraform must use Azure AD for all storage data plane operations. Set `storage_use_azuread = true` in your provider configuration (or export `ARM_STORAGE_USE_AZUREAD=true`) and assign your deployment principal the roles `Storage Queue Data Contributor` and `Storage Table Data Contributor` on the storage account.
 
+## Network Access Restrictions
+
+Both App Services (SCEPman primary and Certificate Master) support configurable network access restrictions via the `network_access_restrictions_primary` and `network_access_restrictions_certificate_master` variables.
+
+By default, these variables are `null`, which preserves the existing permissive behavior and ensures zero diff for existing deployments.
+
+### Configuration Options
+
+Each variable accepts an object with the following attributes:
+
+| Attribute | Type | Description |
+|---|---|---|
+| `public_network_access_enabled` | `bool` | Enable or disable public network access to the App Service. Set to `false` for private-only deployments. |
+| `ip_restriction_default_action` | `string` | Default action when no IP restriction rule matches (`"Allow"` or `"Deny"`). Set to `"Deny"` for deny-by-default. |
+| `ip_restrictions` | `list(object)` | List of inbound IP restriction rules. Each rule supports `action`, `ip_address`, `service_tag`, `virtual_network_subnet_id`, `name`, `priority`, and `headers`. |
+| `scm_ip_restriction_default_action` | `string` | Default action for SCM/Kudu endpoint when no rule matches (`"Allow"` or `"Deny"`). |
+| `scm_ip_restrictions` | `list(object)` | List of SCM/Kudu endpoint IP restriction rules (same schema as `ip_restrictions`). |
+
+### Enterprise Use Case Examples
+
+**Deny-by-default with corporate VPN access:**
+```hcl
+network_access_restrictions_primary = {
+  public_network_access_enabled     = true
+  ip_restriction_default_action     = "Deny"
+  scm_ip_restriction_default_action = "Deny"
+  ip_restrictions = [
+    {
+      name       = "corp-vpn"
+      priority   = 100
+      action     = "Allow"
+      ip_address = "203.0.113.0/24"
+    }
+  ]
+  scm_ip_restrictions = [
+    {
+      name        = "azure-devops"
+      priority    = 100
+      action      = "Allow"
+      service_tag = "AzureDevOps"
+    }
+  ]
+}
+```
+
+**VNet-only access (private deployment):**
+```hcl
+network_access_restrictions_primary = {
+  public_network_access_enabled     = true
+  ip_restriction_default_action     = "Deny"
+  scm_ip_restriction_default_action = "Deny"
+  ip_restrictions = [
+    {
+      name                      = "internal-vnet"
+      priority                  = 100
+      action                    = "Allow"
+      virtual_network_subnet_id = "/subscriptions/.../subnets/app-subnet"
+    }
+  ]
+}
+```
+
+**Behind Azure Front Door:**
+```hcl
+network_access_restrictions_primary = {
+  ip_restriction_default_action     = "Deny"
+  scm_ip_restriction_default_action = "Deny"
+  ip_restrictions = [
+    {
+      name        = "azure-front-door"
+      priority    = 100
+      action      = "Allow"
+      service_tag = "AzureFrontDoor.Backend"
+      headers = {
+        x_azure_fdid = ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"]
+      }
+    }
+  ]
+}
+```
+
+**Fully private (no public access):**
+```hcl
+network_access_restrictions_certificate_master = {
+  public_network_access_enabled = false
+}
+```
+
 <!-- BEGIN_TF_DOCS -->
 
 
