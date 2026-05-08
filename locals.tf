@@ -128,6 +128,25 @@ locals {
     identity_ids = length(var.primary_uami_ids) == 0 ? null : var.primary_uami_ids
   }
 }
+
+# Network access restriction locals
+locals {
+  network_restrictions_primary = var.network_access_restrictions_primary != null ? {
+    public_network_access_enabled     = var.network_access_restrictions_primary.public_network_access_enabled
+    ip_restriction_default_action     = var.network_access_restrictions_primary.ip_restriction_default_action
+    ip_restrictions                   = coalesce(var.network_access_restrictions_primary.ip_restrictions, [])
+    scm_ip_restriction_default_action = var.network_access_restrictions_primary.scm_ip_restriction_default_action
+    scm_ip_restrictions               = coalesce(var.network_access_restrictions_primary.scm_ip_restrictions, [])
+  } : null
+
+  network_restrictions_certificate_master = var.network_access_restrictions_certificate_master != null ? {
+    public_network_access_enabled     = var.network_access_restrictions_certificate_master.public_network_access_enabled
+    ip_restriction_default_action     = var.network_access_restrictions_certificate_master.ip_restriction_default_action
+    ip_restrictions                   = coalesce(var.network_access_restrictions_certificate_master.ip_restrictions, [])
+    scm_ip_restriction_default_action = var.network_access_restrictions_certificate_master.scm_ip_restriction_default_action
+    scm_ip_restrictions               = coalesce(var.network_access_restrictions_certificate_master.scm_ip_restrictions, [])
+  } : null
+}
 # Certificate Master Locals
 locals {
 
