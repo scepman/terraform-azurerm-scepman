@@ -6,9 +6,9 @@ locals {
 
   subnet_endpoints_id = local.create_networking ? "${azurerm_virtual_network.vnet-scepman[0].id}/subnets/${var.subnet_endpoints_name}" : var.existing_subnet_endpoints_id
 
-  # Resolve subnet address prefixes: use explicit IPAM values if provided, otherwise auto-calculate from VNet address space
-  subnet_appservices_address_prefix = var.subnet_appservices_address_prefix != null ? var.subnet_appservices_address_prefix : cidrsubnet(var.vnet_address_space[0], 3, 0)
-  subnet_endpoints_address_prefix   = var.subnet_endpoints_address_prefix != null ? var.subnet_endpoints_address_prefix : cidrsubnet(var.vnet_address_space[0], 3, 1)
+  # Resolve subnet address prefixes: use explicit IPAM values if provided, otherwise auto-calculate from VNet address space when creating networking
+  subnet_appservices_address_prefix = var.subnet_appservices_address_prefix != null ? var.subnet_appservices_address_prefix : (local.create_networking ? cidrsubnet(var.vnet_address_space[0], 3, 0) : null)
+  subnet_endpoints_address_prefix   = var.subnet_endpoints_address_prefix != null ? var.subnet_endpoints_address_prefix : (local.create_networking ? cidrsubnet(var.vnet_address_space[0], 3, 1) : null)
 }
 
 # Artifacts URL
