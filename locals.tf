@@ -1,6 +1,6 @@
 # Networking locals
 locals {
-  create_networking = var.existing_subnet_appservices_id == null
+  create_networking = var.create_networking
 
   subnet_appservices_id = local.create_networking ? "${azurerm_virtual_network.vnet-scepman[0].id}/subnets/${var.subnet_appservices_name}" : var.existing_subnet_appservices_id
 
