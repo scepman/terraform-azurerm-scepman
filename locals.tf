@@ -11,6 +11,15 @@ locals {
   subnet_endpoints_address_prefix   = var.subnet_endpoints_address_prefix != null ? var.subnet_endpoints_address_prefix : (local.create_networking ? cidrsubnet(var.vnet_address_space[0], 3, 1) : null)
 }
 
+# Apply-time validation: existing_subnet_appservices_id must be provided when create_networking is false.
+# Uses a check block instead of variable validation so computed/unknown values pass plan and are validated at apply.
+check "byos_subnet_appservices_required" {
+  assert {
+    condition     = var.create_networking || var.existing_subnet_appservices_id != null
+    error_message = "existing_subnet_appservices_id is required when create_networking is false."
+  }
+}
+
 # Artifacts URL
 locals {
   # Base URL for the artifacts hosted by GK
