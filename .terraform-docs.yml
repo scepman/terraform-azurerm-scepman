@@ -93,7 +93,6 @@ content: |-
 
     create_networking              = false
     existing_subnet_appservices_id = module.network.subnets["snet-scepman-appservices"].resource_id
-    existing_subnet_endpoints_id   = module.network.subnets["snet-scepman-endpoints"].resource_id
 
     resource_group_name             = azurerm_resource_group.rg.name
     location                        = var.location
