@@ -248,15 +248,26 @@ variable "key_vault_use_rbac" {
   description = "Use RBAC for the key vault or the older access policies"
 }
 
+variable "create_networking" {
+  type        = bool
+  default     = true
+  description = "Whether the module should create and manage networking resources (VNet, subnets, NSGs, Private DNS zones, DNS zone links, Private Endpoints). Set to false and provide existing_subnet_appservices_id and existing_subnet_endpoints_id to use pre-existing subnets (BYOS). This explicit toggle ensures plan-time determinism even when subnet IDs are computed from other modules in the same plan."
+}
+
 variable "existing_subnet_appservices_id" {
   type        = string
   default     = null
   nullable    = true
-  description = "Resource ID of an existing subnet delegated to Microsoft.Web/serverFarms for App Service VNet integration. When set, existing_subnet_endpoints_id must also be provided and the module will not create any networking resources (VNet, subnets, NSGs, Private DNS zones, DNS zone links, or Private Endpoints)."
+  description = "Resource ID of an existing subnet delegated to Microsoft.Web/serverFarms for App Service VNet integration. Required when create_networking is false."
 
   validation {
     condition     = var.existing_subnet_appservices_id == null || can(regex("^/subscriptions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_appservices_id))
     error_message = "Must be a valid Azure subnet resource ID."
+  }
+
+  validation {
+    condition     = var.create_networking || var.existing_subnet_appservices_id != null
+    error_message = "existing_subnet_appservices_id is required when create_networking is false."
   }
 }
 
@@ -264,7 +275,7 @@ variable "existing_subnet_endpoints_id" {
   type        = string
   default     = null
   nullable    = true
-  description = "Resource ID of an existing subnet for Private Endpoints (Key Vault, Storage Account). When set, existing_subnet_appservices_id must also be provided and the module will not create any networking resources."
+  description = "Resource ID of an existing subnet for Private Endpoints (Key Vault, Storage Account). Required when create_networking is false."
 
   validation {
     condition     = var.existing_subnet_endpoints_id == null || can(regex("^/subscriptions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_endpoints_id))
@@ -272,34 +283,34 @@ variable "existing_subnet_endpoints_id" {
   }
 
   validation {
-    condition     = (var.existing_subnet_appservices_id == null) == (var.existing_subnet_endpoints_id == null)
-    error_message = "Both existing_subnet_appservices_id and existing_subnet_endpoints_id must be set together, or both must be null."
+    condition     = var.create_networking || var.existing_subnet_endpoints_id != null
+    error_message = "existing_subnet_endpoints_id is required when create_networking is false."
   }
 }
 
 variable "vnet_name" {
   type        = string
   default     = "vnet-scepman"
-  description = "Name of the VNET created for internal communication. Ignored when existing_subnet_appservices_id is set."
+  description = "Name of the VNET created for internal communication. Ignored when create_networking is false."
 }
 
 variable "vnet_address_space" {
   type        = list(any)
   default     = ["10.158.200.0/24"]
-  description = "Address-Space of the VNET. Ignored when existing_subnet_appservices_id is set."
+  description = "Address-Space of the VNET. Ignored when create_networking is false."
 }
 
 variable "subnet_appservices_name" {
   type        = string
   default     = "snet-scepman-appservices"
-  description = "Name of the subnet created for integrating the App Services. Ignored when existing_subnet_appservices_id is set."
+  description = "Name of the subnet created for integrating the App Services. Ignored when create_networking is false."
 }
 
 variable "subnet_appservices_address_prefix" {
   type        = string
   default     = null
   nullable    = true
-  description = "CIDR address prefix for the App Services subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet_address_space using cidrsubnet(). Ignored when existing_subnet_appservices_id is set."
+  description = "CIDR address prefix for the App Services subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet_address_space using cidrsubnet(). Ignored when create_networking is false."
 
   validation {
     condition     = var.subnet_appservices_address_prefix == null || can(cidrhost(var.subnet_appservices_address_prefix, 0))
@@ -310,14 +321,14 @@ variable "subnet_appservices_address_prefix" {
 variable "subnet_endpoints_name" {
   type        = string
   default     = "snet-scepman-endpoints"
-  description = "Name of the subnet created for the other endpoints. Ignored when existing_subnet_endpoints_id is set."
+  description = "Name of the subnet created for the other endpoints. Ignored when create_networking is false."
 }
 
 variable "subnet_endpoints_address_prefix" {
   type        = string
   default     = null
   nullable    = true
-  description = "CIDR address prefix for the Private Endpoints subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet_address_space using cidrsubnet(). Ignored when existing_subnet_endpoints_id is set."
+  description = "CIDR address prefix for the Private Endpoints subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet_address_space using cidrsubnet(). Ignored when create_networking is false."
 
   validation {
     condition     = var.subnet_endpoints_address_prefix == null || can(cidrhost(var.subnet_endpoints_address_prefix, 0))
@@ -328,13 +339,13 @@ variable "subnet_endpoints_address_prefix" {
 variable "nsg_endpoints_name" {
   type        = string
   default     = "nsg-scepman-endpoints"
-  description = "Name of the Network Security Group for the endpoints subnet. Ignored when existing_subnet_endpoints_id is set."
+  description = "Name of the Network Security Group for the endpoints subnet. Ignored when create_networking is false."
 }
 
 variable "nsg_appservices_name" {
   type        = string
   default     = "nsg-scepman-appservices"
-  description = "Name of the Network Security Group for the app services subnet. Ignored when existing_subnet_appservices_id is set."
+  description = "Name of the Network Security Group for the app services subnet. Ignored when create_networking is false."
 }
 
 variable "tags" {
