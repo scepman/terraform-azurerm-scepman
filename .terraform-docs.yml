@@ -78,9 +78,9 @@ content: |-
   >
   > 1. Create or identify the replacement VNet/subnets/NSGs/Private DNS zones/Private Endpoints that will be managed outside this module.
   > 2. Verify the replacement networking is fully configured and connected to the workload.
-  > 3. Remove the module-managed networking resources from Terraform state **before** setting the BYOS variables (e.g., `terraform state rm 'module.scepman.azurerm_virtual_network.vnet-scepman[0]'`).
-  > 4. Run `terraform state list` to identify exact resource addresses in your deployment, then remove only the networking resources you intend to manage externally.
-  > 5. After state cleanup, set the BYOS variables and run `terraform plan` to confirm no destruction is proposed.
+  > 3. Run `terraform state list` to identify the exact resource addresses in your deployment before removing anything from state.
+  > 4. Note that addresses may differ depending on your upgrade path: for example, the VNet may appear as `module.scepman.azurerm_virtual_network.vnet-scepman` or `module.scepman.azurerm_virtual_network.vnet-scepman[0]`.
+  > 5. Remove only the module-managed networking resources you intend to manage externally using the exact addresses returned by `terraform state list`, then set the BYOS variables and run `terraform plan` to confirm no destruction is proposed.
 
   ```hcl
   module "network" {
