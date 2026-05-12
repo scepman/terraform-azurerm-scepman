@@ -11,12 +11,17 @@ locals {
   subnet_endpoints_address_prefix   = var.subnet_endpoints_address_prefix != null ? var.subnet_endpoints_address_prefix : (local.create_networking ? cidrsubnet(var.vnet_address_space[0], 3, 1) : null)
 }
 
-# Apply-time validation: existing_subnet_appservices_id must be provided when create_networking is false.
+# Apply-time validation for BYOS mode.
 # Uses a check block instead of variable validation so computed/unknown values pass plan and are validated at apply.
 check "byos_subnet_appservices_required" {
   assert {
     condition     = var.create_networking || var.existing_subnet_appservices_id != null
     error_message = "existing_subnet_appservices_id is required when create_networking is false."
+  }
+
+  assert {
+    condition     = var.create_networking || can(regex("(?i)^/subscriptions/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_appservices_id))
+    error_message = "existing_subnet_appservices_id must be a valid Azure subnet resource ID when create_networking is false."
   }
 }
 

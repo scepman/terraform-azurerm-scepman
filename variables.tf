@@ -258,7 +258,7 @@ variable "existing_subnet_appservices_id" {
   type        = string
   default     = null
   nullable    = true
-  description = "Resource ID of an existing subnet delegated to Microsoft.Web/serverFarms for App Service VNet integration. Required when create_networking is false; validated at apply time to support computed values from other modules in the same plan."
+  description = "Resource ID of an existing subnet delegated to Microsoft.Web/serverFarms for App Service VNet integration. Required when create_networking is false; presence and format are validated at apply time via a check block to support computed values from other modules in the same plan."
 
   validation {
     condition     = var.existing_subnet_appservices_id == null || can(regex("(?i)^/subscriptions/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_appservices_id))
