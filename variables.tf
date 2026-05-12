@@ -251,7 +251,7 @@ variable "key_vault_use_rbac" {
 variable "create_networking" {
   type        = bool
   default     = true
-  description = "Whether the module should create and manage networking resources (VNet, subnets, NSGs, Private DNS zones, DNS zone links, Private Endpoints). Set to false to use pre-existing subnets (BYOS); in this mode, you must provide existing_subnet_appservices_id, while existing_subnet_endpoints_id is optional/informational because the module does not create Private Endpoints. This explicit toggle ensures plan-time determinism even when subnet IDs are computed from other modules in the same plan."
+  description = "Whether the module should create and manage networking resources (VNet, subnets, NSGs, Private DNS zones, DNS zone links, Private Endpoints). Set to false to use pre-existing subnets (BYOS); in this mode, you must provide existing_subnet_appservices_id. You are responsible for managing Private Endpoints, DNS zones, and NSGs externally. This explicit toggle ensures plan-time determinism even when subnet IDs are computed from other modules in the same plan."
 }
 
 variable "existing_subnet_appservices_id" {
@@ -262,19 +262,6 @@ variable "existing_subnet_appservices_id" {
 
   validation {
     condition     = var.existing_subnet_appservices_id == null || can(regex("(?i)^/subscriptions/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_appservices_id))
-    error_message = "Must be a valid Azure subnet resource ID."
-  }
-
-}
-
-variable "existing_subnet_endpoints_id" {
-  type        = string
-  default     = null
-  nullable    = true
-  description = "Resource ID of an existing subnet for Private Endpoints (Key Vault, Storage Account). Optional — only informational in BYOS mode since the module does not create Private Endpoints when create_networking is false. You must manage Private Endpoints externally."
-
-  validation {
-    condition     = var.existing_subnet_endpoints_id == null || can(regex("(?i)^/subscriptions/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$", var.existing_subnet_endpoints_id))
     error_message = "Must be a valid Azure subnet resource ID."
   }
 
