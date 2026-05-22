@@ -24,7 +24,13 @@ locals {
       description          = "Request certificates via EST or the raw CSR API for your own devices or your own user account."
       display_name         = "CSR Self Service"
       value                = "CSR.SelfService"
-    }
+    },
+    {
+      allowed_member_types = ["Application", "User"]
+      description          = "Use the Management API to see and revoke all issued certificates"
+      display_name         = "Manage All"
+      value                = "Manage.All"
+    },
   ]
 
   certmaster_approles = [
