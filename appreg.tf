@@ -226,6 +226,8 @@ resource "azuread_service_principal" "scepman" {
   count     = var.manage_entra_apps ? 1 : 0
   client_id = module.appreg_scepman[0].client_id
 
+  depends_on = [module.appreg_scepman[0]]
+
   feature_tags {
     hide = true
   }
@@ -320,7 +322,7 @@ resource "azuread_app_role_assignment" "mi_scepman_intune_scep_challenge_provide
 
 resource "azuread_app_role_assignment" "mi_cm_csr_request" {
   count               = var.manage_entra_apps ? 1 : 0
-  app_role_id         = azuread_service_principal.scepman[0].app_role_ids["CSR.Request"]
+  app_role_id         = module.appreg_scepman[0].app_role_ids["CSR.Request"]
   principal_object_id = local.cm_mi_principal_id
   resource_object_id  = azuread_service_principal.scepman[0].object_id
 }
