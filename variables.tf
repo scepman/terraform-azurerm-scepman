@@ -292,8 +292,32 @@ variable "subnet_appservices_address_prefix" {
   description = "CIDR address prefix for the App Services subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet_address_space using cidrsubnet(). Ignored when create_networking is false."
 
   validation {
-    condition     = var.subnet_appservices_address_prefix == null || can(cidrhost(var.subnet_appservices_address_prefix, 0))
-    error_message = "Must be a valid CIDR notation (e.g., 10.0.1.0/26)."
+    # Mirror of subnet_endpoints_address_prefix validation
+    condition = var.subnet_appservices_address_prefix == null || (
+      # Valid CIDR notation
+      can(cidrhost(var.subnet_appservices_address_prefix, 0)) &&
+      (
+        # Skip network topology checks when not managing networking
+        !var.create_networking || (
+          # VNet address space must be defined
+          length(var.vnet_address_space) > 0 &&
+          # Subnet must be contained within the VNet
+          can(cidrcontains(var.vnet_address_space[0], var.subnet_appservices_address_prefix)) &&
+          cidrcontains(var.vnet_address_space[0], var.subnet_appservices_address_prefix) &&
+          (
+            # No overlap check needed when the other subnet is auto-calculated
+            var.subnet_endpoints_address_prefix == null || (
+              # Subnets must not overlap: neither range contains the other
+              can(cidrcontains(var.subnet_appservices_address_prefix, var.subnet_endpoints_address_prefix)) &&
+              can(cidrcontains(var.subnet_endpoints_address_prefix, var.subnet_appservices_address_prefix)) &&
+              !cidrcontains(var.subnet_appservices_address_prefix, var.subnet_endpoints_address_prefix) &&
+              !cidrcontains(var.subnet_endpoints_address_prefix, var.subnet_appservices_address_prefix)
+            )
+          )
+        )
+      )
+    )
+    error_message = "Must be a valid CIDR notation (e.g., 10.0.1.0/26). When create_networking is true, the prefix must be contained within vnet_address_space[0] and must not overlap subnet_endpoints_address_prefix."
   }
 }
 
@@ -310,15 +334,22 @@ variable "subnet_endpoints_address_prefix" {
   description = "CIDR address prefix for the Private Endpoints subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet_address_space using cidrsubnet(). Ignored when create_networking is false."
 
   validation {
+    # Mirror of subnet_appservices_address_prefix validation
     condition = var.subnet_endpoints_address_prefix == null || (
+      # Valid CIDR notation
       can(cidrhost(var.subnet_endpoints_address_prefix, 0)) &&
       (
+        # Skip network topology checks when not managing networking
         !var.create_networking || (
+          # VNet address space must be defined
           length(var.vnet_address_space) > 0 &&
+          # Subnet must be contained within the VNet
           can(cidrcontains(var.vnet_address_space[0], var.subnet_endpoints_address_prefix)) &&
           cidrcontains(var.vnet_address_space[0], var.subnet_endpoints_address_prefix) &&
           (
+            # No overlap check needed when the other subnet is auto-calculated
             var.subnet_appservices_address_prefix == null || (
+              # Subnets must not overlap: neither range contains the other
               can(cidrcontains(var.subnet_endpoints_address_prefix, var.subnet_appservices_address_prefix)) &&
               can(cidrcontains(var.subnet_appservices_address_prefix, var.subnet_endpoints_address_prefix)) &&
               !cidrcontains(var.subnet_endpoints_address_prefix, var.subnet_appservices_address_prefix) &&
