@@ -1,0 +1,72 @@
+name: Smoke Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  smoke-test:
+    name: Deploy Quickstart Example
+    runs-on: ubuntu-latest
+
+    env:
+      ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+      ARM_USE_OIDC: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate resource group name
+        id: rg
+        run: echo "name=rg-scepman-smoke-$(head -c 4 /dev/urandom | xxd -p)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: examples/quickstart
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: examples/quickstart
+        run: |
+          terraform apply -auto-approve \
+            -var="subscription_id=${{ vars.ARM_SUBSCRIPTION_ID }}" \
+            -var="location=${{ vars.LOCATION }}" \
+            -var="resource_group_name=${{ steps.rg.outputs.name }}"
+
+      - name: Get SCEPman URL
+        id: scepman
+        working-directory: examples/quickstart
+        run: echo "url=$(terraform output -raw scepman_url)" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for SCEPman to start
+        run: sleep 60
+
+      - name: Probe SCEPman health
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.scepman.outputs.url }}/api/probe")
+          echo "SCEPman probe returned HTTP $response"
+          if [ "$response" != "200" ]; then
+            echo "::error::SCEPman health probe failed with HTTP $response"
+            curl -s "${{ steps.scepman.outputs.url }}/api/probe" || true
+            exit 1
+          fi
+
+      - name: Terraform Destroy
+        if: always()
+        working-directory: examples/quickstart
+        run: |
+          terraform destroy -auto-approve \
+            -var="subscription_id=${{ vars.ARM_SUBSCRIPTION_ID }}" \
+            -var="location=${{ vars.LOCATION }}" \
+            -var="resource_group_name=${{ steps.rg.outputs.name }}" \
+            -var='app_settings_primary={"AppConfig:KeyVaultConfig:RootCertificateConfig:KeyType":"RSA"}'
