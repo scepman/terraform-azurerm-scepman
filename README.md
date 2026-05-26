@@ -220,6 +220,14 @@ module "scepman" {
 
 When `subnet_appservices_address_prefix` or `subnet_endpoints_address_prefix` are omitted (default), prefixes are auto-calculated from `vnet_address_space` using `cidrsubnet()`.
 
+> **ℹ️ Subnet address validation**
+>
+> Custom address prefixes are validated for correct CIDR format at plan time. Containment within the VNet address space and non-overlap between subnets are enforced by the Azure API at apply time — if your prefixes fall outside `vnet_address_space` or overlap each other, Azure will return a clear error during resource creation.
+
+> **⚠️ Changing VNet address space on existing deployments**
+>
+> Modifying `vnet_address_space` or custom subnet prefixes on an already-deployed environment will fail if Private Endpoints are attached to the existing subnets. Azure does not allow resizing a VNet/subnet with active Private Endpoint connections. To change address ranges on a live deployment, you must first delete (or move) the Private Endpoints, resize the network, then recreate the endpoints. Consider using BYOS mode for environments where networking is managed by a separate lifecycle.
+
 ### Bring Your Own Subnet (BYOS)
 
 For enterprise environments with centrally managed networking (e.g., using [Azure Verified Module for Virtual Networks](https://github.com/Azure/terraform-azurerm-avm-res-network-virtualnetwork)), you can pass existing subnet IDs instead of letting the module create its own networking resources.
