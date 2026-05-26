@@ -251,7 +251,7 @@ variable "key_vault_use_rbac" {
 variable "create_networking" {
   type        = bool
   default     = true
-  description = "Whether the module should create and manage networking resources (VNet, subnets, NSGs, Private DNS zones, DNS zone links, Private Endpoints). Set to false to use pre-existing subnets (BYOS); in this mode, you must provide existing_subnet_appservices_id. You are responsible for managing Private Endpoints, DNS zones, and NSGs externally. This explicit toggle ensures plan-time determinism even when subnet IDs are computed from other modules in the same plan."
+  description = "Whether the module creates networking resources (VNet, subnets, NSGs, DNS zones, Private Endpoints). Set to false for BYOS mode — provide existing_subnet_appservices_id and manage networking externally."
 }
 
 variable "existing_subnet_appservices_id" {
