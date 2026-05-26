@@ -277,6 +277,11 @@ variable "vnet_address_space" {
   type        = list(any)
   default     = ["10.158.200.0/24"]
   description = "Address-Space of the VNET. Ignored when create_networking is false."
+
+    validation {
+      condition = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
+      error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
+    }
 }
 
 variable "subnet_appservices_name" {
@@ -292,8 +297,11 @@ variable "subnet_appservices_address_prefix" {
   description = "CIDR address prefix for the App Services subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet_address_space using cidrsubnet(). Ignored when create_networking is false. Note: Azure validates at apply time that the prefix is within the VNet address space and does not overlap other subnets."
 
   validation {
-    condition     = var.subnet_appservices_address_prefix == null || can(cidrhost(var.subnet_appservices_address_prefix, 0))
-    error_message = "Must be a valid CIDR notation (e.g., 10.0.1.0/26)."
+    condition = var.subnet_appservices_address_prefix == null || (
+      # Valid CIDR notation
+      can(cidrhost(var.subnet_appservices_address_prefix, 0))
+    )
+    error_message = "Must be a valid CIDR notation (e.g., 10.0.1.0/26). When create_networking is true, the prefix must be contained within vnet_address_space[0]."
   }
 }
 
