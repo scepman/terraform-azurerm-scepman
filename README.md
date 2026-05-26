@@ -232,7 +232,7 @@ When `subnet_appservices_address_prefix` or `subnet_endpoints_address_prefix` ar
 
 For enterprise environments with centrally managed networking (e.g., using [Azure Verified Module for Virtual Networks](https://github.com/Azure/terraform-azurerm-avm-res-network-virtualnetwork)), you can pass existing subnet IDs instead of letting the module create its own networking resources.
 
-Set `create_networking = false` and provide `existing_subnet_appservices_id`. The explicit boolean toggle ensures plan-time determinism — subnet IDs may be unknown until apply (e.g., when the networking module runs in the same plan) without causing Terraform `count` errors. A `check` block enforces at apply time that `existing_subnet_appservices_id` is provided and is a valid Azure subnet resource ID.
+Set `create_networking = false` and provide `existing_subnet_appservices_id`.
 
 When `create_networking` is `false`, the module skips creation of: VNet, subnets, NSGs, Private DNS zones, Private DNS zone links, and Private Endpoints. You are responsible for managing these externally, including:
 - Subnet delegation (`Microsoft.Web/serverFarms`) on the App Services subnet
