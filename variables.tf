@@ -279,7 +279,9 @@ variable "vnet_address_space" {
   description = "Address-Space of the VNET. Ignored when create_networking is false."
 
     validation {
-    condition = length(var.vnet_address_space) > 0
+      condition = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
+      error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
+    }
 }
 
 variable "subnet_appservices_name" {
