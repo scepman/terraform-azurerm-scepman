@@ -12,7 +12,8 @@ locals {
 }
 
 # Apply-time validation for BYOS mode.
-# Uses a check block instead of variable validation so computed/unknown values pass plan and are validated at apply.
+# Uses a check block so computed/unknown values (e.g., subnet IDs from other modules) pass plan
+# and are validated at apply. When values are known at plan time, validation fires immediately.
 check "byos_subnet_appservices_required" {
   assert {
     condition     = var.create_networking || var.existing_subnet_appservices_id != null
