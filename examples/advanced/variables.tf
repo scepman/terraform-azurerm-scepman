@@ -139,7 +139,7 @@ variable "service_plan_os_type" {
 
 variable "service_plan_sku" {
   type        = string
-  default     = "P0v3"
+  default     = "P0V3"
   description = "SKU for App Service Plan"
 }
 
