@@ -12,7 +12,7 @@ resource "azurerm_windows_web_app" "app" {
   resource_group_name           = var.resource_group_name
   location                      = var.location
   https_only                    = false
-  virtual_network_subnet_id     = "${azurerm_virtual_network.vnet-scepman.id}/subnets/${var.subnet_appservices_name}"
+  virtual_network_subnet_id     = local.subnet_appservices_id
   public_network_access_enabled = local.network_restrictions_primary != null ? local.network_restrictions_primary.public_network_access_enabled : null
 
   service_plan_id = local.service_plan_resource_id
@@ -127,7 +127,7 @@ resource "azurerm_windows_web_app" "app_cm" {
   resource_group_name           = var.resource_group_name
   location                      = var.location
   https_only                    = true
-  virtual_network_subnet_id     = "${azurerm_virtual_network.vnet-scepman.id}/subnets/${var.subnet_appservices_name}"
+  virtual_network_subnet_id     = local.subnet_appservices_id
   public_network_access_enabled = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.public_network_access_enabled : null
 
   service_plan_id = local.service_plan_resource_id
@@ -240,7 +240,7 @@ resource "azurerm_linux_web_app" "app" {
   resource_group_name           = var.resource_group_name
   location                      = var.location
   https_only                    = false
-  virtual_network_subnet_id     = "${azurerm_virtual_network.vnet-scepman.id}/subnets/${var.subnet_appservices_name}"
+  virtual_network_subnet_id     = local.subnet_appservices_id
   public_network_access_enabled = local.network_restrictions_primary != null ? local.network_restrictions_primary.public_network_access_enabled : null
 
   service_plan_id = local.service_plan_resource_id
@@ -356,7 +356,7 @@ resource "azurerm_linux_web_app" "app_cm" {
   resource_group_name           = var.resource_group_name
   location                      = var.location
   https_only                    = true
-  virtual_network_subnet_id     = "${azurerm_virtual_network.vnet-scepman.id}/subnets/${var.subnet_appservices_name}"
+  virtual_network_subnet_id     = local.subnet_appservices_id
   public_network_access_enabled = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.public_network_access_enabled : null
 
   service_plan_id = local.service_plan_resource_id

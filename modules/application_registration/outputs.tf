@@ -22,3 +22,8 @@ output "publisher_domain" {
   description = "The verified publisher domain for the application."
   value       = azuread_application_registration.this.publisher_domain
 }
+
+output "app_role_ids" {
+  description = "Map of app role values to their UUIDs"
+  value       = { for k, v in azuread_application_app_role.this : k => v.role_id }
+}
