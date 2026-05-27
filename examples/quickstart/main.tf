@@ -66,7 +66,7 @@ module "scepman" {
   manage_entra_apps                   = true
 
   service_plan_os_type = "Linux"
-  service_plan_sku = "P0v3"
+  service_plan_sku     = "P0v3"
 
   artifacts_url_primary            = "https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts-Linux.zip"
   artifacts_url_certificate_master = "https://raw.githubusercontent.com/scepman/install/master/dist-certmaster/CertMaster-Artifacts-Linux.zip"
