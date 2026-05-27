@@ -128,7 +128,7 @@ variable "service_plan_name" {
 
 variable "service_plan_os_type" {
   type    = string
-  default = "Windows"
+  default = "Linux"
   validation {
     condition     = can(regex("Windows|Linux", var.service_plan_os_type))
     error_message = "service_plan_os_type must be either 'Windows' or 'Linux'"
@@ -138,7 +138,7 @@ variable "service_plan_os_type" {
 
 variable "service_plan_sku" {
   type        = string
-  default     = "S1"
+  default     = "P0v3"
   description = "SKU for App Service Plan"
 }
 
@@ -231,13 +231,13 @@ variable "tags" {
 
 variable "artifacts_url_primary" {
   type        = string
-  default     = "https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts.zip"
+  default     = "https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts-Linux.zip"
   description = "URL of the artifacts for SCEPman"
 }
 
 variable "artifacts_url_certificate_master" {
   type        = string
-  default     = "https://raw.githubusercontent.com/scepman/install/master/dist-certmaster/CertMaster-Artifacts.zip"
+  default     = "https://raw.githubusercontent.com/scepman/install/master/dist-certmaster/CertMaster-Artifacts-Linux.zip"
   description = "URL of the artifacts for SCEPman Certificate Master"
 }
 variable "app_settings_primary" {
