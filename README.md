@@ -192,6 +192,88 @@ To re-use an existing Log Analytics Workspace that lives in another subscription
 ```
 When you supply `law_cross_subscription_details`, omit both `law_name` and `law_resource_group_name`.
 
+### IPAM Integration (Custom Address Prefixes)
+
+If your organization uses IPAM (IP Address Management) to assign subnet ranges but you want the module to still manage the VNet, subnets, NSGs, DNS zones, and Private Endpoints, use the address prefix override variables:
+
+```hcl
+module "scepman" {
+  source = "scepman/scepman/azurerm"
+
+  # Use IPAM-assigned address prefixes instead of auto-calculated ranges
+  vnet_address_space                = ["10.100.4.0/24"]
+  subnet_appservices_address_prefix = "10.100.4.0/26"
+  subnet_endpoints_address_prefix   = "10.100.4.64/26"
+
+  # ... other required inputs
+  resource_group_name             = azurerm_resource_group.rg.name
+  location                        = var.location
+  storage_account_name            = var.storage_account_name
+  key_vault_name                  = var.key_vault_name
+  law_name                        = var.law_name
+  service_plan_name               = var.service_plan_name
+  app_service_name_primary        = var.app_service_name_primary
+  app_service_name_certificate_master = var.app_service_name_certificate_master
+  manage_entra_apps               = true
+}
+```
+
+When `subnet_appservices_address_prefix` or `subnet_endpoints_address_prefix` are omitted (default), prefixes are auto-calculated from `vnet_address_space` using `cidrsubnet()`.
+
+> **ℹ️ Subnet address validation**
+>
+> Custom address prefixes are validated for correct CIDR format at plan time. Containment within the VNet address space and non-overlap between subnets are enforced by the Azure API at apply time — if your prefixes fall outside `vnet_address_space` or overlap each other, Azure will return a clear error during resource creation.
+
+> **⚠️ Changing VNet address space on existing deployments**
+>
+> Modifying `vnet_address_space` or custom subnet prefixes on an already-deployed environment will fail if Private Endpoints are attached to the existing subnets. Azure does not allow resizing a VNet/subnet with active Private Endpoint connections. To change address ranges on a live deployment, you must first delete (or move) the Private Endpoints, resize the network, then recreate the endpoints. Consider using BYOS mode for environments where networking is managed by a separate lifecycle.
+
+### Bring Your Own Subnet (BYOS)
+
+For enterprise environments with centrally managed networking (e.g., using [Azure Verified Module for Virtual Networks](https://github.com/Azure/terraform-azurerm-avm-res-network-virtualnetwork)), you can pass existing subnet IDs instead of letting the module create its own networking resources.
+
+Set `create_networking = false` and provide `existing_subnet_appservices_id`.
+
+When `create_networking` is `false`, the module skips creation of: VNet, subnets, NSGs, Private DNS zones, Private DNS zone links, and Private Endpoints. You are responsible for managing these externally, including:
+- Subnet delegation (`Microsoft.Web/serverFarms`) on the App Services subnet
+- Private Endpoints for Key Vault and Storage Account in the endpoints subnet
+- Private DNS zone configuration for `privatelink.vaultcore.azure.net` and `privatelink.table.core.windows.net`
+- NSG rules as needed
+
+> **⚠️ Migrating an existing deployment to BYOS**
+>
+> If you switch an existing deployment from module-managed networking to BYOS, Terraform will plan to **destroy** the previously module-managed networking resources (VNet, NSGs, Private DNS zones, Private Endpoints). To avoid accidental outages:
+>
+> 1. Create or identify the replacement VNet/subnets/NSGs/Private DNS zones/Private Endpoints that will be managed outside this module.
+> 2. Verify the replacement networking is fully configured and connected to the workload.
+> 3. Run `terraform state list` to identify the exact resource addresses in your deployment before removing anything from state.
+> 4. Note that addresses may differ depending on your upgrade path: for example, the VNet may appear as `module.scepman.azurerm_virtual_network.vnet-scepman` or `module.scepman.azurerm_virtual_network.vnet-scepman[0]`.
+> 5. Remove only the module-managed networking resources you intend to manage externally using the exact addresses returned by `terraform state list`, then set the BYOS variables and run `terraform plan` to confirm no destruction is proposed.
+
+```hcl
+module "network" {
+  source = "Azure/avm-res-network-virtualnetwork/azurerm"
+  # ... creates vnet/subnets using IPAM or central networking team
+}
+
+module "scepman" {
+  source = "scepman/scepman/azurerm"
+
+  create_networking              = false
+  existing_subnet_appservices_id = module.network.subnets["snet-scepman-appservices"].resource_id
+
+  resource_group_name             = azurerm_resource_group.rg.name
+  location                        = var.location
+  storage_account_name            = var.storage_account_name
+  key_vault_name                  = var.key_vault_name
+  law_name                        = var.law_name
+  service_plan_name               = var.service_plan_name
+  app_service_name_primary        = var.app_service_name_primary
+  app_service_name_certificate_master = var.app_service_name_certificate_master
+  manage_entra_apps               = true
+}
+```
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -210,7 +292,9 @@ When you supply `law_cross_subscription_details`, omit both `law_name` and `law_
 | <a name="input_artifacts_url_certificate_master"></a> [artifacts\_url\_certificate\_master](#input\_artifacts\_url\_certificate\_master) | URL of the artifacts for SCEPman Certificate Master | `string` | `"https://raw.githubusercontent.com/scepman/install/master/dist-certmaster/CertMaster-Artifacts.zip"` | no |
 | <a name="input_artifacts_url_primary"></a> [artifacts\_url\_primary](#input\_artifacts\_url\_primary) | URL of the artifacts for SCEPman | `string` | `"https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts.zip"` | no |
 | <a name="input_certificate_master_uami_ids"></a> [certificate\_master\_uami\_ids](#input\_certificate\_master\_uami\_ids) | Set of user assigned managed identity resource IDs to assign to the SCEPman Certificate Master app service. The certificate master app service will always have a system assigned managed identity. This setting therefore is optional and for advanced use cases where additional user assigned managed identities need to be assigned to the app service. For most use cases, this can be left empty. | `set(string)` | `[]` | no |
+| <a name="input_create_networking"></a> [create\_networking](#input\_create\_networking) | Whether the module should create and manage networking resources (VNet, subnets, NSGs, Private DNS zones, DNS zone links, Private Endpoints). Set to false to use pre-existing subnets (BYOS); in this mode, you must provide existing\_subnet\_appservices\_id. You are responsible for managing Private Endpoints, DNS zones, and NSGs externally. This explicit toggle ensures plan-time determinism even when subnet IDs are computed from other modules in the same plan. | `bool` | `true` | no |
 | <a name="input_enable_application_insights"></a> [enable\_application\_insights](#input\_enable\_application\_insights) | Should Terraform create and connect Application Insights for the App services? NOTE: This will prevent Terraform from beeing able to destroy the ressource group! | `bool` | `false` | no |
+| <a name="input_existing_subnet_appservices_id"></a> [existing\_subnet\_appservices\_id](#input\_existing\_subnet\_appservices\_id) | Resource ID of an existing subnet delegated to Microsoft.Web/serverFarms for App Service VNet integration. Required when create\_networking is false; presence and format are validated at apply time via a check block to support computed values from other modules in the same plan. | `string` | `null` | no |
 | <a name="input_key_vault_name"></a> [key\_vault\_name](#input\_key\_vault\_name) | Name of the key vault | `string` | n/a | yes |
 | <a name="input_key_vault_use_rbac"></a> [key\_vault\_use\_rbac](#input\_key\_vault\_use\_rbac) | Use RBAC for the key vault or the older access policies | `bool` | `true` | no |
 | <a name="input_law_cross_subscription_details"></a> [law\_cross\_subscription\_details](#input\_law\_cross\_subscription\_details) | Used to reference an existing Log Analytics Workspace located in another subscription. Use this instead of law\_name and law\_resource\_group\_name. | <pre>object({<br/>    id           = string<br/>    workspace_id = string<br/>    shared_key   = string<br/>  })</pre> | `null` | no |
@@ -218,8 +302,8 @@ When you supply `law_cross_subscription_details`, omit both `law_name` and `law_
 | <a name="input_law_resource_group_name"></a> [law\_resource\_group\_name](#input\_law\_resource\_group\_name) | Resource Group of existing Log Analytics Workspace | `string` | `null` | no |
 | <a name="input_location"></a> [location](#input\_location) | Azure Region where the resources should be created | `string` | n/a | yes |
 | <a name="input_manage_entra_apps"></a> [manage\_entra\_apps](#input\_manage\_entra\_apps) | Whether to manage the Entra app registrations for SCEPman and Certificate Master within this module. If set to true, the user executing this must have Global Administrator privileges in the tenant/the service principal must have Application.ReadWrite.All, AppRoleAssignment.ReadWrite.All, DelegatedPermissionGrant.ReadWrite.All permissions. For legacy installations, which were created before this setting existed, only set to true if you wish to migrate to the new model. For new installations, it is recommended to set this to true. | `bool` | `false` | no |
-| <a name="input_nsg_appservices_name"></a> [nsg\_appservices\_name](#input\_nsg\_appservices\_name) | Name of the Network Security Group for the app services subnet | `string` | `"nsg-scepman-appservices"` | no |
-| <a name="input_nsg_endpoints_name"></a> [nsg\_endpoints\_name](#input\_nsg\_endpoints\_name) | Name of the Network Security Group for the endpoints subnet | `string` | `"nsg-scepman-endpoints"` | no |
+| <a name="input_nsg_appservices_name"></a> [nsg\_appservices\_name](#input\_nsg\_appservices\_name) | Name of the Network Security Group for the app services subnet. Ignored when create\_networking is false. | `string` | `"nsg-scepman-appservices"` | no |
+| <a name="input_nsg_endpoints_name"></a> [nsg\_endpoints\_name](#input\_nsg\_endpoints\_name) | Name of the Network Security Group for the endpoints subnet. Ignored when create\_networking is false. | `string` | `"nsg-scepman-endpoints"` | no |
 | <a name="input_organization_name"></a> [organization\_name](#input\_organization\_name) | Organization name (O=<my-org>) | `string` | `"my-org"` | no |
 | <a name="input_primary_uami_ids"></a> [primary\_uami\_ids](#input\_primary\_uami\_ids) | Set of user assigned managed identity resource IDs to assign to the SCEPman primary app service. The primary app service will always have a system assigned managed identity. This setting therefore is optional and for advanced use cases where additional user assigned managed identities need to be assigned to the app service. For most use cases, this can be left empty. | `set(string)` | `[]` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the resource group | `string` | n/a | yes |
@@ -238,11 +322,13 @@ When you supply `law_cross_subscription_details`, omit both `law_name` and `law_
 | <a name="input_storage_account_sas_expiration_period"></a> [storage\_account\_sas\_expiration\_period](#input\_storage\_account\_sas\_expiration\_period) | Default expiration period applied to user delegation and service SAS tokens in d.hh:mm:ss format. | `string` | `"1.00:00:00"` | no |
 | <a name="input_storage_account_shared_access_key_enabled"></a> [storage\_account\_shared\_access\_key\_enabled](#input\_storage\_account\_shared\_access\_key\_enabled) | Enable shared access key authentication for the storage account. Default is false to enforce more secure authentication methods. | `bool` | `false` | no |
 | <a name="input_storage_account_trusted_services_enabled"></a> [storage\_account\_trusted\_services\_enabled](#input\_storage\_account\_trusted\_services\_enabled) | Enable trusted Microsoft services to bypass storage account network rules. | `bool` | `false` | no |
-| <a name="input_subnet_appservices_name"></a> [subnet\_appservices\_name](#input\_subnet\_appservices\_name) | Name of the subnet created for integrating the App Services | `string` | `"snet-scepman-appservices"` | no |
-| <a name="input_subnet_endpoints_name"></a> [subnet\_endpoints\_name](#input\_subnet\_endpoints\_name) | Name of the subnet created for the other endpoints | `string` | `"snet-scepman-endpoints"` | no |
+| <a name="input_subnet_appservices_address_prefix"></a> [subnet\_appservices\_address\_prefix](#input\_subnet\_appservices\_address\_prefix) | CIDR address prefix for the App Services subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet\_address\_space using cidrsubnet(). Ignored when create\_networking is false. | `string` | `null` | no |
+| <a name="input_subnet_appservices_name"></a> [subnet\_appservices\_name](#input\_subnet\_appservices\_name) | Name of the subnet created for integrating the App Services. Ignored when create\_networking is false. | `string` | `"snet-scepman-appservices"` | no |
+| <a name="input_subnet_endpoints_address_prefix"></a> [subnet\_endpoints\_address\_prefix](#input\_subnet\_endpoints\_address\_prefix) | CIDR address prefix for the Private Endpoints subnet (e.g., from IPAM). When null, the prefix is auto-calculated from vnet\_address\_space using cidrsubnet(). Ignored when create\_networking is false. | `string` | `null` | no |
+| <a name="input_subnet_endpoints_name"></a> [subnet\_endpoints\_name](#input\_subnet\_endpoints\_name) | Name of the subnet created for the other endpoints. Ignored when create\_networking is false. | `string` | `"snet-scepman-endpoints"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A mapping of tags to assign to the resource | `map(string)` | `{}` | no |
-| <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space) | Address-Space of the VNET | `list(any)` | <pre>[<br/>  "10.158.200.0/24"<br/>]</pre> | no |
-| <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name) | Name of the VNET created for internal communication | `string` | `"vnet-scepman"` | no |
+| <a name="input_vnet_address_space"></a> [vnet\_address\_space](#input\_vnet\_address\_space) | Address-Space of the VNET. Ignored when create\_networking is false. | `list(any)` | <pre>[<br/>  "10.158.200.0/24"<br/>]</pre> | no |
+| <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name) | Name of the VNET created for internal communication. Ignored when create\_networking is false. | `string` | `"vnet-scepman"` | no |
 
 ## Outputs
 
