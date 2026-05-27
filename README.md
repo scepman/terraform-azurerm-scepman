@@ -81,7 +81,7 @@ network_access_restrictions_primary = {
 }
 ```
 
-**VNet-only access (private deployment):**
+**Deny-by-default with VNet allowlist:**
 ```hcl
 network_access_restrictions_primary = {
   public_network_access_enabled     = true
