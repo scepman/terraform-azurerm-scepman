@@ -175,6 +175,7 @@ locals {
     scm_ip_restrictions               = coalesce(var.network_access_restrictions_certificate_master.scm_ip_restrictions, [])
   } : null
 }
+
 # Certificate Master Locals
 locals {
 
