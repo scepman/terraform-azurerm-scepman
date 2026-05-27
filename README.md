@@ -54,6 +54,10 @@ Each variable accepts an object with the following attributes:
 | `scm_ip_restriction_default_action` | `string` | Default action for SCM/Kudu endpoint when no rule matches (`"Allow"` or `"Deny"`). |
 | `scm_ip_restrictions` | `list(object)` | List of SCM/Kudu endpoint IP restriction rules (same schema as `ip_restrictions`). |
 
+> **Note:** Each rule requires `priority` (unique integer) and exactly one of `ip_address`, `service_tag`, or `virtual_network_subnet_id`.
+
+> **⚠️ Certificate Master → Primary connectivity:** Restricting the primary App Service can break Certificate Master, which reaches SCEPman via the primary's public hostname. If you lock down the primary, ensure Certificate Master's egress is allowed (e.g., via VNet route-all + subnet allow rule, or an explicit IP allow rule).
+
 ### Enterprise Use Case Examples
 
 **Deny-by-default with corporate VPN access:**
@@ -395,7 +399,7 @@ module "scepman" {
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_app_service_application_logs_file_system_level"></a> [app\_service\_application\_logs\_file\_system\_level](#input\_app\_service\_application\_logs\_file\_system\_level) | Application Log level for file\_system | `string` | `"Error"` | no |
 | <a name="input_app_service_logs_detailed_error_messages"></a> [app\_service\_logs\_detailed\_error\_messages](#input\_app\_service\_logs\_detailed\_error\_messages) | Detailed Error messages of the app service | `bool` | `true` | no |
 | <a name="input_app_service_logs_failed_request_tracing"></a> [app\_service\_logs\_failed\_request\_tracing](#input\_app\_service\_logs\_failed\_request\_tracing) | Trace failed requests | `bool` | `false` | no |
@@ -453,7 +457,7 @@ module "scepman" {
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_app_services"></a> [app\_services](#output\_app\_services) | Information about the deployed App Services for SCEPman |
 | <a name="output_certmaster_application"></a> [certmaster\_application](#output\_certmaster\_application) | Information about the Application and Service Principal for the SCEPman Certificate Master |
 | <a name="output_certmaster_mi_principal_id"></a> [certmaster\_mi\_principal\_id](#output\_certmaster\_mi\_principal\_id) | principal\_id of the system assigned managed identity of the SCEPman certificate master |
