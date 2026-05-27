@@ -60,5 +60,15 @@ module "scepman" {
 - Adding restrictions will modify the App Service `site_config` in-place (no recreation).
 - Setting `public_network_access_enabled = false` will immediately block all public traffic.
   Ensure private endpoints or VNet integration is configured before disabling public access.
+- Restricting the **primary** App Service can break **Certificate Master** communication, because
+  Certificate Master reaches SCEPman via the primary's public hostname (`local.default_hostname_primary`,
+  used in `AppConfig:SCEPman:URL`).
+- If you set `public_network_access_enabled = false` on the primary, or configure a deny-by-default
+  `ip_restrictions` policy, make sure the Certificate Master's egress is still allowed to reach the
+  primary. By default, Certificate Master uses the standard outbound Azure IPs, not the integrated
+  subnet, unless `vnet_route_all_enabled` / `WEBSITE_VNET_ROUTE_ALL` is enabled.
+- When locking down the primary, allow Certificate Master's egress either by routing all traffic
+  through the integrated VNet subnet with route-all enabled, or by adding an explicit allow rule for
+  the actual outbound source that reaches the primary.
 - IP restriction rules are evaluated by priority (lowest number = highest priority).
 - Use `service_tag` for Azure service-level access (e.g., `AzureDevOps`, `AzureFrontDoor.Backend`).
