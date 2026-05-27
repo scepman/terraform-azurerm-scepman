@@ -40,7 +40,7 @@ Visit [containers.dev](https://containers.dev) for more information
 
 Both App Services (SCEPman primary and Certificate Master) support configurable network access restrictions via the `network_access_restrictions_primary` and `network_access_restrictions_certificate_master` variables.
 
-By default, these variables are `null`, which preserves the existing permissive behavior and ensures zero diff for existing deployments.
+By default, these variables are `null`, which preserves the existing permissive behavior and should not require infrastructure changes for existing deployments.
 
 ### Configuration Options
 
