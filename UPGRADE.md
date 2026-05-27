@@ -60,5 +60,10 @@ module "scepman" {
 - Adding restrictions will modify the App Service `site_config` in-place (no recreation).
 - Setting `public_network_access_enabled = false` will immediately block all public traffic.
   Ensure private endpoints or VNet integration is configured before disabling public access.
+- **Certificate Master → Primary connectivity:** The Certificate Master communicates with the
+  primary App Service via its public hostname. If you restrict or disable public access on the
+  primary, ensure the Certificate Master's outbound traffic is allowed (e.g., by enabling
+  `vnet_route_all_enabled` and adding the integrated subnet to the primary's allow list, or by
+  using a private endpoint). Otherwise, Certificate Master requests to the primary will fail.
 - IP restriction rules are evaluated by priority (lowest number = highest priority).
 - Use `service_tag` for Azure service-level access (e.g., `AzureDevOps`, `AzureFrontDoor.Backend`).

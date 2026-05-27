@@ -278,10 +278,10 @@ variable "vnet_address_space" {
   default     = ["10.158.200.0/24"]
   description = "Address-Space of the VNET. Ignored when create_networking is false."
 
-    validation {
-      condition = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
-      error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
-    }
+  validation {
+    condition     = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
+    error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
+  }
 }
 
 variable "subnet_appservices_name" {
@@ -417,6 +417,22 @@ variable "network_access_restrictions_primary" {
     )
     error_message = "ip_restriction_default_action and scm_ip_restriction_default_action must be either 'Allow' or 'Deny'."
   }
+
+  validation {
+    condition = var.network_access_restrictions_primary == null || alltrue([
+      for rule in coalesce(try(var.network_access_restrictions_primary.ip_restrictions, null), []) :
+      contains(["Allow", "Deny"], rule.action)
+    ])
+    error_message = "Each ip_restrictions rule action must be either 'Allow' or 'Deny'."
+  }
+
+  validation {
+    condition = var.network_access_restrictions_primary == null || alltrue([
+      for rule in coalesce(try(var.network_access_restrictions_primary.scm_ip_restrictions, null), []) :
+      contains(["Allow", "Deny"], rule.action)
+    ])
+    error_message = "Each scm_ip_restrictions rule action must be either 'Allow' or 'Deny'."
+  }
 }
 
 variable "network_access_restrictions_certificate_master" {
@@ -465,6 +481,22 @@ variable "network_access_restrictions_certificate_master" {
       contains(["Allow", "Deny"], var.network_access_restrictions_certificate_master.scm_ip_restriction_default_action))
     )
     error_message = "ip_restriction_default_action and scm_ip_restriction_default_action must be either 'Allow' or 'Deny'."
+  }
+
+  validation {
+    condition = var.network_access_restrictions_certificate_master == null || alltrue([
+      for rule in coalesce(try(var.network_access_restrictions_certificate_master.ip_restrictions, null), []) :
+      contains(["Allow", "Deny"], rule.action)
+    ])
+    error_message = "Each ip_restrictions rule action must be either 'Allow' or 'Deny'."
+  }
+
+  validation {
+    condition = var.network_access_restrictions_certificate_master == null || alltrue([
+      for rule in coalesce(try(var.network_access_restrictions_certificate_master.scm_ip_restrictions, null), []) :
+      contains(["Allow", "Deny"], rule.action)
+    ])
+    error_message = "Each scm_ip_restrictions rule action must be either 'Allow' or 'Deny'."
   }
 }
 
