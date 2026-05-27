@@ -12,11 +12,11 @@ for the SCEPman primary and Certificate Master App Services:
 
 ### Impact on Existing Deployments
 
-**None.** Both variables default to `null`, which means:
+**None to infrastructure behavior by default.** Both variables default to `null`, which means:
 
 - No `ip_restriction` or `scm_ip_restriction` blocks are rendered
-- `public_network_access_enabled` is not set (provider default applies)
-- Existing deployments will see **zero diff** on `terraform plan`
+- `public_network_access_enabled`, `ip_restriction_default_action`, and `scm_ip_restriction_default_action` continue to use provider/default behavior when unset
+- Existing deployments should not require infrastructure changes, but `terraform plan` may show an in-place or no-op `site_config` update depending on the current state and `azurerm` provider behavior
 - No resource recreation is triggered
 
 ### Migration Steps
