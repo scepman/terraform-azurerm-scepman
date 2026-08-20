@@ -27,7 +27,6 @@ content: |-
     law_cross_subscription_details = {
       id           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-monitoring/providers/Microsoft.OperationalInsights/workspaces/law-central"
       workspace_id = "00000000-0000-0000-0000-000000000000"
-      shared_key   = "redacted-primary-shared-key"
     }
   ```
   When you supply `law_cross_subscription_details`, omit both `law_name` and `law_resource_group_name`.
