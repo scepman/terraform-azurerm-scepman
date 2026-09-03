@@ -278,10 +278,10 @@ variable "vnet_address_space" {
   default     = ["10.158.200.0/24"]
   description = "Address-Space of the VNET. Ignored when create_networking is false."
 
-    validation {
-      condition = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
-      error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
-    }
+  validation {
+    condition     = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
+    error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
+  }
 }
 
 variable "subnet_appservices_name" {
@@ -368,6 +368,136 @@ variable "manage_entra_apps" {
   type        = bool
   description = "Whether to manage the Entra app registrations for SCEPman and Certificate Master within this module. If set to true, the user executing this must have Global Administrator privileges in the tenant/the service principal must have Application.ReadWrite.All, AppRoleAssignment.ReadWrite.All, DelegatedPermissionGrant.ReadWrite.All permissions. For legacy installations, which were created before this setting existed, only set to true if you wish to migrate to the new model. For new installations, it is recommended to set this to true."
   default     = false
+}
+
+variable "network_access_restrictions_primary" {
+  type = object({
+    public_network_access_enabled = optional(bool)
+    ip_restriction_default_action = optional(string)
+    ip_restrictions = optional(list(object({
+      action = optional(string, "Allow")
+      headers = optional(object({
+        x_azure_fdid      = optional(set(string))
+        x_fd_health_probe = optional(set(string))
+        x_forwarded_for   = optional(set(string))
+        x_forwarded_host  = optional(set(string))
+      }))
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+    })))
+    scm_ip_restriction_default_action = optional(string)
+    scm_ip_restrictions = optional(list(object({
+      action = optional(string, "Allow")
+      headers = optional(object({
+        x_azure_fdid      = optional(set(string))
+        x_fd_health_probe = optional(set(string))
+        x_forwarded_for   = optional(set(string))
+        x_forwarded_host  = optional(set(string))
+      }))
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+    })))
+  })
+  default     = null
+  nullable    = true
+  description = "Network access restrictions for the SCEPman primary App Service. Controls public network access, inbound IP restrictions, and SCM/Kudu endpoint restrictions. When null (default), no restrictions are applied and the existing behavior is preserved."
+
+  validation {
+    condition = var.network_access_restrictions_primary == null || (
+      (try(var.network_access_restrictions_primary.ip_restriction_default_action, null) == null ||
+      contains(["Allow", "Deny"], var.network_access_restrictions_primary.ip_restriction_default_action)) &&
+      (try(var.network_access_restrictions_primary.scm_ip_restriction_default_action, null) == null ||
+      contains(["Allow", "Deny"], var.network_access_restrictions_primary.scm_ip_restriction_default_action))
+    )
+    error_message = "ip_restriction_default_action and scm_ip_restriction_default_action must be either 'Allow' or 'Deny'."
+  }
+
+  validation {
+    condition = var.network_access_restrictions_primary == null || alltrue([
+      for rule in coalesce(try(var.network_access_restrictions_primary.ip_restrictions, null), []) :
+      contains(["Allow", "Deny"], rule.action)
+    ])
+    error_message = "Each ip_restrictions rule action must be either 'Allow' or 'Deny'."
+  }
+
+  validation {
+    condition = var.network_access_restrictions_primary == null || alltrue([
+      for rule in coalesce(try(var.network_access_restrictions_primary.scm_ip_restrictions, null), []) :
+      contains(["Allow", "Deny"], rule.action)
+    ])
+    error_message = "Each scm_ip_restrictions rule action must be either 'Allow' or 'Deny'."
+  }
+}
+
+variable "network_access_restrictions_certificate_master" {
+  type = object({
+    public_network_access_enabled = optional(bool)
+    ip_restriction_default_action = optional(string)
+    ip_restrictions = optional(list(object({
+      action = optional(string, "Allow")
+      headers = optional(object({
+        x_azure_fdid      = optional(set(string))
+        x_fd_health_probe = optional(set(string))
+        x_forwarded_for   = optional(set(string))
+        x_forwarded_host  = optional(set(string))
+      }))
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+    })))
+    scm_ip_restriction_default_action = optional(string)
+    scm_ip_restrictions = optional(list(object({
+      action = optional(string, "Allow")
+      headers = optional(object({
+        x_azure_fdid      = optional(set(string))
+        x_fd_health_probe = optional(set(string))
+        x_forwarded_for   = optional(set(string))
+        x_forwarded_host  = optional(set(string))
+      }))
+      ip_address                = optional(string)
+      name                      = optional(string)
+      priority                  = optional(number)
+      service_tag               = optional(string)
+      virtual_network_subnet_id = optional(string)
+    })))
+  })
+  default     = null
+  nullable    = true
+  description = "Network access restrictions for the Certificate Master App Service. Controls public network access, inbound IP restrictions, and SCM/Kudu endpoint restrictions. When null (default), no restrictions are applied and the existing behavior is preserved."
+
+  validation {
+    condition = var.network_access_restrictions_certificate_master == null || (
+      (try(var.network_access_restrictions_certificate_master.ip_restriction_default_action, null) == null ||
+      contains(["Allow", "Deny"], var.network_access_restrictions_certificate_master.ip_restriction_default_action)) &&
+      (try(var.network_access_restrictions_certificate_master.scm_ip_restriction_default_action, null) == null ||
+      contains(["Allow", "Deny"], var.network_access_restrictions_certificate_master.scm_ip_restriction_default_action))
+    )
+    error_message = "ip_restriction_default_action and scm_ip_restriction_default_action must be either 'Allow' or 'Deny'."
+  }
+
+  validation {
+    condition = var.network_access_restrictions_certificate_master == null || alltrue([
+      for rule in coalesce(try(var.network_access_restrictions_certificate_master.ip_restrictions, null), []) :
+      contains(["Allow", "Deny"], rule.action)
+    ])
+    error_message = "Each ip_restrictions rule action must be either 'Allow' or 'Deny'."
+  }
+
+  validation {
+    condition = var.network_access_restrictions_certificate_master == null || alltrue([
+      for rule in coalesce(try(var.network_access_restrictions_certificate_master.scm_ip_restrictions, null), []) :
+      contains(["Allow", "Deny"], rule.action)
+    ])
+    error_message = "Each scm_ip_restrictions rule action must be either 'Allow' or 'Deny'."
+  }
 }
 
 variable "primary_uami_ids" {
