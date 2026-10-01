@@ -2,12 +2,13 @@
 # Scepman Primary
 
 resource "azurerm_windows_web_app" "app_full" {
-  count                     = (lower(var.service_plan_os_type) == "windows" && var.manage_entra_apps) ? 1 : 0
-  name                      = var.app_service_name_primary
-  resource_group_name       = var.resource_group_name
-  location                  = var.location
-  https_only                = false
-  virtual_network_subnet_id = local.subnet_appservices_id
+  count                         = (lower(var.service_plan_os_type) == "windows" && var.manage_entra_apps) ? 1 : 0
+  name                          = var.app_service_name_primary
+  resource_group_name           = var.resource_group_name
+  location                      = var.location
+  https_only                    = false
+  virtual_network_subnet_id     = local.subnet_appservices_id
+  public_network_access_enabled = local.network_restrictions_primary != null ? local.network_restrictions_primary.public_network_access_enabled : null
 
   service_plan_id = local.service_plan_resource_id
 
@@ -24,6 +25,53 @@ resource "azurerm_windows_web_app" "app_full" {
     application_stack {
       current_stack  = "dotnet"
       dotnet_version = "v8.0"
+    }
+
+    ip_restriction_default_action     = local.network_restrictions_primary != null ? local.network_restrictions_primary.ip_restriction_default_action : null
+    scm_ip_restriction_default_action = local.network_restrictions_primary != null ? local.network_restrictions_primary.scm_ip_restriction_default_action : null
+
+    dynamic "ip_restriction" {
+      for_each = local.network_restrictions_primary != null ? local.network_restrictions_primary.ip_restrictions : []
+      content {
+        action                    = ip_restriction.value.action
+        ip_address                = ip_restriction.value.ip_address
+        name                      = ip_restriction.value.name
+        priority                  = ip_restriction.value.priority
+        service_tag               = ip_restriction.value.service_tag
+        virtual_network_subnet_id = ip_restriction.value.virtual_network_subnet_id
+
+        dynamic "headers" {
+          for_each = ip_restriction.value.headers != null ? [ip_restriction.value.headers] : []
+          content {
+            x_azure_fdid      = headers.value.x_azure_fdid
+            x_fd_health_probe = headers.value.x_fd_health_probe
+            x_forwarded_for   = headers.value.x_forwarded_for
+            x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
+    }
+
+    dynamic "scm_ip_restriction" {
+      for_each = local.network_restrictions_primary != null ? local.network_restrictions_primary.scm_ip_restrictions : []
+      content {
+        action                    = scm_ip_restriction.value.action
+        ip_address                = scm_ip_restriction.value.ip_address
+        name                      = scm_ip_restriction.value.name
+        priority                  = scm_ip_restriction.value.priority
+        service_tag               = scm_ip_restriction.value.service_tag
+        virtual_network_subnet_id = scm_ip_restriction.value.virtual_network_subnet_id
+
+        dynamic "headers" {
+          for_each = scm_ip_restriction.value.headers != null ? [scm_ip_restriction.value.headers] : []
+          content {
+            x_azure_fdid      = headers.value.x_azure_fdid
+            x_fd_health_probe = headers.value.x_fd_health_probe
+            x_forwarded_for   = headers.value.x_forwarded_for
+            x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
     }
   }
 
@@ -64,12 +112,13 @@ resource "azurerm_windows_web_app" "app_full" {
 
 # Certificate Master App Service
 resource "azurerm_windows_web_app" "app_cm_full" {
-  count                     = (lower(var.service_plan_os_type) == "windows" && var.manage_entra_apps) ? 1 : 0
-  name                      = var.app_service_name_certificate_master
-  resource_group_name       = var.resource_group_name
-  location                  = var.location
-  https_only                = true
-  virtual_network_subnet_id = local.subnet_appservices_id
+  count                         = (lower(var.service_plan_os_type) == "windows" && var.manage_entra_apps) ? 1 : 0
+  name                          = var.app_service_name_certificate_master
+  resource_group_name           = var.resource_group_name
+  location                      = var.location
+  https_only                    = true
+  virtual_network_subnet_id     = local.subnet_appservices_id
+  public_network_access_enabled = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.public_network_access_enabled : null
 
   service_plan_id = local.service_plan_resource_id
 
@@ -86,6 +135,53 @@ resource "azurerm_windows_web_app" "app_cm_full" {
     application_stack {
       current_stack  = "dotnet"
       dotnet_version = "v8.0"
+    }
+
+    ip_restriction_default_action     = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.ip_restriction_default_action : null
+    scm_ip_restriction_default_action = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.scm_ip_restriction_default_action : null
+
+    dynamic "ip_restriction" {
+      for_each = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.ip_restrictions : []
+      content {
+        action                    = ip_restriction.value.action
+        ip_address                = ip_restriction.value.ip_address
+        name                      = ip_restriction.value.name
+        priority                  = ip_restriction.value.priority
+        service_tag               = ip_restriction.value.service_tag
+        virtual_network_subnet_id = ip_restriction.value.virtual_network_subnet_id
+
+        dynamic "headers" {
+          for_each = ip_restriction.value.headers != null ? [ip_restriction.value.headers] : []
+          content {
+            x_azure_fdid      = headers.value.x_azure_fdid
+            x_fd_health_probe = headers.value.x_fd_health_probe
+            x_forwarded_for   = headers.value.x_forwarded_for
+            x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
+    }
+
+    dynamic "scm_ip_restriction" {
+      for_each = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.scm_ip_restrictions : []
+      content {
+        action                    = scm_ip_restriction.value.action
+        ip_address                = scm_ip_restriction.value.ip_address
+        name                      = scm_ip_restriction.value.name
+        priority                  = scm_ip_restriction.value.priority
+        service_tag               = scm_ip_restriction.value.service_tag
+        virtual_network_subnet_id = scm_ip_restriction.value.virtual_network_subnet_id
+
+        dynamic "headers" {
+          for_each = scm_ip_restriction.value.headers != null ? [scm_ip_restriction.value.headers] : []
+          content {
+            x_azure_fdid      = headers.value.x_azure_fdid
+            x_fd_health_probe = headers.value.x_fd_health_probe
+            x_forwarded_for   = headers.value.x_forwarded_for
+            x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
     }
   }
 
@@ -122,12 +218,13 @@ resource "azurerm_windows_web_app" "app_cm_full" {
 ### Linux App Service
 # Scepman Primary
 resource "azurerm_linux_web_app" "app_full" {
-  count                     = (lower(var.service_plan_os_type) == "linux" && var.manage_entra_apps) ? 1 : 0
-  name                      = var.app_service_name_primary
-  resource_group_name       = var.resource_group_name
-  location                  = var.location
-  https_only                = false
-  virtual_network_subnet_id = local.subnet_appservices_id
+  count                         = (lower(var.service_plan_os_type) == "linux" && var.manage_entra_apps) ? 1 : 0
+  name                          = var.app_service_name_primary
+  resource_group_name           = var.resource_group_name
+  location                      = var.location
+  https_only                    = false
+  virtual_network_subnet_id     = local.subnet_appservices_id
+  public_network_access_enabled = local.network_restrictions_primary != null ? local.network_restrictions_primary.public_network_access_enabled : null
 
   service_plan_id = local.service_plan_resource_id
 
@@ -144,6 +241,53 @@ resource "azurerm_linux_web_app" "app_full" {
     application_stack {
       #current_stack  = "dotnet"
       dotnet_version = "8.0"
+    }
+
+    ip_restriction_default_action     = local.network_restrictions_primary != null ? local.network_restrictions_primary.ip_restriction_default_action : null
+    scm_ip_restriction_default_action = local.network_restrictions_primary != null ? local.network_restrictions_primary.scm_ip_restriction_default_action : null
+
+    dynamic "ip_restriction" {
+      for_each = local.network_restrictions_primary != null ? local.network_restrictions_primary.ip_restrictions : []
+      content {
+        action                    = ip_restriction.value.action
+        ip_address                = ip_restriction.value.ip_address
+        name                      = ip_restriction.value.name
+        priority                  = ip_restriction.value.priority
+        service_tag               = ip_restriction.value.service_tag
+        virtual_network_subnet_id = ip_restriction.value.virtual_network_subnet_id
+
+        dynamic "headers" {
+          for_each = ip_restriction.value.headers != null ? [ip_restriction.value.headers] : []
+          content {
+            x_azure_fdid      = headers.value.x_azure_fdid
+            x_fd_health_probe = headers.value.x_fd_health_probe
+            x_forwarded_for   = headers.value.x_forwarded_for
+            x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
+    }
+
+    dynamic "scm_ip_restriction" {
+      for_each = local.network_restrictions_primary != null ? local.network_restrictions_primary.scm_ip_restrictions : []
+      content {
+        action                    = scm_ip_restriction.value.action
+        ip_address                = scm_ip_restriction.value.ip_address
+        name                      = scm_ip_restriction.value.name
+        priority                  = scm_ip_restriction.value.priority
+        service_tag               = scm_ip_restriction.value.service_tag
+        virtual_network_subnet_id = scm_ip_restriction.value.virtual_network_subnet_id
+
+        dynamic "headers" {
+          for_each = scm_ip_restriction.value.headers != null ? [scm_ip_restriction.value.headers] : []
+          content {
+            x_azure_fdid      = headers.value.x_azure_fdid
+            x_fd_health_probe = headers.value.x_fd_health_probe
+            x_forwarded_for   = headers.value.x_forwarded_for
+            x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
     }
   }
 
@@ -185,12 +329,13 @@ resource "azurerm_linux_web_app" "app_full" {
 
 # Certificate Master App Service
 resource "azurerm_linux_web_app" "app_cm_full" {
-  count                     = (lower(var.service_plan_os_type) == "linux" && var.manage_entra_apps) ? 1 : 0
-  name                      = var.app_service_name_certificate_master
-  resource_group_name       = var.resource_group_name
-  location                  = var.location
-  https_only                = true
-  virtual_network_subnet_id = local.subnet_appservices_id
+  count                         = (lower(var.service_plan_os_type) == "linux" && var.manage_entra_apps) ? 1 : 0
+  name                          = var.app_service_name_certificate_master
+  resource_group_name           = var.resource_group_name
+  location                      = var.location
+  https_only                    = true
+  virtual_network_subnet_id     = local.subnet_appservices_id
+  public_network_access_enabled = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.public_network_access_enabled : null
 
   service_plan_id = local.service_plan_resource_id
 
@@ -207,6 +352,53 @@ resource "azurerm_linux_web_app" "app_cm_full" {
     application_stack {
       #  current_stack  = "dotnet"
       dotnet_version = "8.0"
+    }
+
+    ip_restriction_default_action     = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.ip_restriction_default_action : null
+    scm_ip_restriction_default_action = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.scm_ip_restriction_default_action : null
+
+    dynamic "ip_restriction" {
+      for_each = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.ip_restrictions : []
+      content {
+        action                    = ip_restriction.value.action
+        ip_address                = ip_restriction.value.ip_address
+        name                      = ip_restriction.value.name
+        priority                  = ip_restriction.value.priority
+        service_tag               = ip_restriction.value.service_tag
+        virtual_network_subnet_id = ip_restriction.value.virtual_network_subnet_id
+
+        dynamic "headers" {
+          for_each = ip_restriction.value.headers != null ? [ip_restriction.value.headers] : []
+          content {
+            x_azure_fdid      = headers.value.x_azure_fdid
+            x_fd_health_probe = headers.value.x_fd_health_probe
+            x_forwarded_for   = headers.value.x_forwarded_for
+            x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
+    }
+
+    dynamic "scm_ip_restriction" {
+      for_each = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.scm_ip_restrictions : []
+      content {
+        action                    = scm_ip_restriction.value.action
+        ip_address                = scm_ip_restriction.value.ip_address
+        name                      = scm_ip_restriction.value.name
+        priority                  = scm_ip_restriction.value.priority
+        service_tag               = scm_ip_restriction.value.service_tag
+        virtual_network_subnet_id = scm_ip_restriction.value.virtual_network_subnet_id
+
+        dynamic "headers" {
+          for_each = scm_ip_restriction.value.headers != null ? [scm_ip_restriction.value.headers] : []
+          content {
+            x_azure_fdid      = headers.value.x_azure_fdid
+            x_fd_health_probe = headers.value.x_fd_health_probe
+            x_forwarded_for   = headers.value.x_forwarded_for
+            x_forwarded_host  = headers.value.x_forwarded_host
+          }
+        }
+      }
     }
   }
 

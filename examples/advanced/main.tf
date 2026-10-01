@@ -58,5 +58,35 @@ module "scepman" {
   enable_application_insights = var.enable_application_insights
   manage_entra_apps           = true
 
+  # Optional: Configure network access restrictions for the primary SCEPman app
+  # network_access_restrictions_primary = {
+  #   public_network_access_enabled = true
+  #   ip_restriction_default_action = "Deny"
+  #   ip_restrictions = [
+  #     {
+  #       name       = "allow-corp-vpn"
+  #       priority   = 100
+  #       action     = "Allow"
+  #       ip_address = "203.0.113.0/24"
+  #     }
+  #   ]
+  #   scm_ip_restriction_default_action = "Deny"
+  #   scm_ip_restrictions = [
+  #     {
+  #       name        = "allow-build-agents"
+  #       priority    = 100
+  #       action      = "Allow"
+  #       service_tag = "AzureDevOps"
+  #     }
+  #   ]
+  # }
+
+  # Optional: Configure network access restrictions for Certificate Master
+  # network_access_restrictions_certificate_master = {
+  #   public_network_access_enabled     = false
+  #   ip_restriction_default_action     = "Deny"
+  #   scm_ip_restriction_default_action = "Deny"
+  # }
+
   tags = var.tags
 }
