@@ -215,6 +215,8 @@ data "azuread_service_principal" "msgraph" {
 data "azuread_service_principal" "intune" {
   count     = var.manage_entra_apps ? 1 : 0
   client_id = data.azuread_application_published_app_ids.well_known[0].result["InTune"]
+
+  depends_on = [data.azuread_service_principal.msgraph]
 }
 
 module "appreg_scepman" {
@@ -239,6 +241,16 @@ resource "azuread_service_principal" "scepman" {
   }
 }
 
+# Azure AD has eventual consistency: the service principal may not immediately
+# reflect app roles after creation. This sleep allows propagation before
+# role assignments reference the service principal.
+resource "time_sleep" "wait_for_scepman_sp" {
+  count = var.manage_entra_apps ? 1 : 0
+
+  depends_on      = [azuread_service_principal.scepman[0]]
+  create_duration = "30s"
+}
+
 locals {
   scepman_api_scope = var.manage_entra_apps ? "api://${module.appreg_scepman[0].client_id}" : null
 }
@@ -260,6 +272,13 @@ resource "azuread_service_principal" "certmaster" {
   feature_tags {
     hide = false
   }
+}
+
+resource "time_sleep" "wait_for_certmaster_sp" {
+  count = var.manage_entra_apps ? 1 : 0
+
+  depends_on      = [azuread_service_principal.certmaster[0]]
+  create_duration = "30s"
 }
 resource "azuread_application_redirect_uris" "appreg_certmaster" {
   count          = var.manage_entra_apps ? 1 : 0
@@ -290,6 +309,8 @@ resource "azuread_service_principal_delegated_permission_grant" "certmaster_grap
     "User.Read",
     "offline_access",
   ]
+
+  depends_on = [time_sleep.wait_for_certmaster_sp[0]]
 }
 
 
@@ -331,6 +352,8 @@ resource "azuread_app_role_assignment" "mi_cm_csr_request" {
   app_role_id         = module.appreg_scepman[0].app_role_ids["CSR.Request"]
   principal_object_id = local.cm_mi_principal_id
   resource_object_id  = azuread_service_principal.scepman[0].object_id
+
+  depends_on = [time_sleep.wait_for_scepman_sp[0]]
 }
 resource "azuread_app_role_assignment" "mi_cm_graph_device_management_config_read_all" {
   count               = var.manage_entra_apps ? 1 : 0
