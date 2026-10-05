@@ -89,6 +89,8 @@ resource "azurerm_virtual_network" "vnet-scepman" {
   location            = var.location
   address_space       = var.vnet_address_space
 
+  tags = var.tags
+
   subnet {
     name                            = var.subnet_appservices_name
     address_prefixes                = [local.subnet_appservices_address_prefix]
@@ -116,6 +118,8 @@ resource "azurerm_private_dns_zone" "dnsprivatezone-kv" {
 
   name                = "privatelink.vaultcore.azure.net"
   resource_group_name = var.resource_group_name
+
+  tags = var.tags
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-kv" {
@@ -125,6 +129,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-kv" {
   resource_group_name   = var.resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone-kv[0].name
   virtual_network_id    = azurerm_virtual_network.vnet-scepman[0].id
+
+  tags = var.tags
 }
 
 resource "azurerm_private_dns_zone" "dnsprivatezone-sts" {
@@ -132,6 +138,8 @@ resource "azurerm_private_dns_zone" "dnsprivatezone-sts" {
 
   name                = "privatelink.table.core.windows.net"
   resource_group_name = var.resource_group_name
+
+  tags = var.tags
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-sts" {
@@ -141,6 +149,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-sts" {
   resource_group_name   = var.resource_group_name
   private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone-sts[0].name
   virtual_network_id    = azurerm_virtual_network.vnet-scepman[0].id
+
+  tags = var.tags
 }
 
 
@@ -152,6 +162,8 @@ resource "azurerm_private_endpoint" "storage_pe" {
   location            = var.location
   resource_group_name = var.resource_group_name
   subnet_id           = local.subnet_endpoints_id
+
+  tags = var.tags
 
   private_dns_zone_group {
     name                 = "privatednszonegroup"
@@ -175,6 +187,8 @@ resource "azurerm_private_endpoint" "key_vault_pe" {
   location            = var.location
   resource_group_name = var.resource_group_name
   subnet_id           = local.subnet_endpoints_id
+
+  tags = var.tags
 
   private_dns_zone_group {
     name                 = "privatednszonegroup"

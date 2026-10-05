@@ -278,10 +278,10 @@ variable "vnet_address_space" {
   default     = ["10.158.200.0/24"]
   description = "Address-Space of the VNET. Ignored when create_networking is false."
 
-    validation {
-      condition = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
-      error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
-    }
+  validation {
+    condition     = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
+    error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
+  }
 }
 
 variable "subnet_appservices_name" {
@@ -355,13 +355,13 @@ variable "artifacts_url_certificate_master" {
 variable "app_settings_primary" {
   type        = map(string)
   default     = {}
-  description = "A mapping of app settings to assign to the primary app service"
+  description = "A mapping of additional app settings to assign to the primary app service. User-supplied values take precedence over module-computed defaults (last-writer-wins). Avoid overriding module-managed keys such as AppConfig:KeyVaultConfig:KeyVaultURL, AppConfig:CertificateStorage:TableStorageEndpoint, and AppConfig:BaseUrl unless intentional; when manage_entra_apps = true, also avoid AppConfig:AuthConfig:ApplicationId. Both \":\" and \"__\" key separators are accepted and normalised internally."
 }
 
 variable "app_settings_certificate_master" {
   type        = map(string)
   default     = {}
-  description = "A mapping of app settings to assign to the certificate master app service"
+  description = "A mapping of additional app settings to assign to the certificate master app service. User-supplied values take precedence over module-computed defaults (last-writer-wins). Avoid overriding module-managed keys such as AppConfig:AzureStorage:TableStorageEndpoint unless intentional; when manage_entra_apps = true, also avoid AppConfig:AuthConfig:ApplicationId. Override AppConfig:SCEPman:URL when using a custom domain for the primary app service. Both \":\" and \"__\" key separators are accepted and normalised internally."
 }
 
 variable "manage_entra_apps" {

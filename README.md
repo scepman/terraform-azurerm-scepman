@@ -232,7 +232,7 @@ When `subnet_appservices_address_prefix` or `subnet_endpoints_address_prefix` ar
 
 For enterprise environments with centrally managed networking (e.g., using [Azure Verified Module for Virtual Networks](https://github.com/Azure/terraform-azurerm-avm-res-network-virtualnetwork)), you can pass existing subnet IDs instead of letting the module create its own networking resources.
 
-Set `create_networking = false` and provide `existing_subnet_appservices_id`.
+Set `create_networking = false` and provide `existing_subnet_appservices_id`. The explicit boolean toggle ensures plan-time determinism — subnet IDs may be unknown until apply (e.g., when the networking module runs in the same plan) without causing Terraform `count` errors. A `check` block enforces at apply time that `existing_subnet_appservices_id` is provided and is a valid Azure subnet resource ID.
 
 When `create_networking` is `false`, the module skips creation of: VNet, subnets, NSGs, Private DNS zones, Private DNS zone links, and Private Endpoints. You are responsible for managing these externally, including:
 - Subnet delegation (`Microsoft.Web/serverFarms`) on the App Services subnet
@@ -277,7 +277,7 @@ module "scepman" {
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_app_service_application_logs_file_system_level"></a> [app\_service\_application\_logs\_file\_system\_level](#input\_app\_service\_application\_logs\_file\_system\_level) | Application Log level for file\_system | `string` | `"Error"` | no |
 | <a name="input_app_service_logs_detailed_error_messages"></a> [app\_service\_logs\_detailed\_error\_messages](#input\_app\_service\_logs\_detailed\_error\_messages) | Detailed Error messages of the app service | `bool` | `true` | no |
 | <a name="input_app_service_logs_failed_request_tracing"></a> [app\_service\_logs\_failed\_request\_tracing](#input\_app\_service\_logs\_failed\_request\_tracing) | Trace failed requests | `bool` | `false` | no |
@@ -287,8 +287,8 @@ module "scepman" {
 | <a name="input_app_service_name_primary"></a> [app\_service\_name\_primary](#input\_app\_service\_name\_primary) | Name of the primary app service | `string` | n/a | yes |
 | <a name="input_app_service_retention_in_days"></a> [app\_service\_retention\_in\_days](#input\_app\_service\_retention\_in\_days) | How many days http\_logs should be kept | `number` | `90` | no |
 | <a name="input_app_service_retention_in_mb"></a> [app\_service\_retention\_in\_mb](#input\_app\_service\_retention\_in\_mb) | Max file size of http\_logs | `number` | `35` | no |
-| <a name="input_app_settings_certificate_master"></a> [app\_settings\_certificate\_master](#input\_app\_settings\_certificate\_master) | A mapping of app settings to assign to the certificate master app service | `map(string)` | `{}` | no |
-| <a name="input_app_settings_primary"></a> [app\_settings\_primary](#input\_app\_settings\_primary) | A mapping of app settings to assign to the primary app service | `map(string)` | `{}` | no |
+| <a name="input_app_settings_certificate_master"></a> [app\_settings\_certificate\_master](#input\_app\_settings\_certificate\_master) | A mapping of additional app settings to assign to the certificate master app service. User-supplied values take precedence over module-computed defaults (last-writer-wins). Avoid overriding module-managed keys such as AppConfig:AzureStorage:TableStorageEndpoint unless intentional; when manage\_entra\_apps = true, also avoid AppConfig:AuthConfig:ApplicationId. Override AppConfig:SCEPman:URL when using a custom domain for the primary app service. Both ":" and "\_\_" key separators are accepted and normalised internally. | `map(string)` | `{}` | no |
+| <a name="input_app_settings_primary"></a> [app\_settings\_primary](#input\_app\_settings\_primary) | A mapping of additional app settings to assign to the primary app service. User-supplied values take precedence over module-computed defaults (last-writer-wins). Avoid overriding module-managed keys such as AppConfig:KeyVaultConfig:KeyVaultURL, AppConfig:CertificateStorage:TableStorageEndpoint, and AppConfig:BaseUrl unless intentional; when manage\_entra\_apps = true, also avoid AppConfig:AuthConfig:ApplicationId. Both ":" and "\_\_" key separators are accepted and normalised internally. | `map(string)` | `{}` | no |
 | <a name="input_artifacts_url_certificate_master"></a> [artifacts\_url\_certificate\_master](#input\_artifacts\_url\_certificate\_master) | URL of the artifacts for SCEPman Certificate Master | `string` | `"https://raw.githubusercontent.com/scepman/install/master/dist-certmaster/CertMaster-Artifacts.zip"` | no |
 | <a name="input_artifacts_url_primary"></a> [artifacts\_url\_primary](#input\_artifacts\_url\_primary) | URL of the artifacts for SCEPman | `string` | `"https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts.zip"` | no |
 | <a name="input_certificate_master_uami_ids"></a> [certificate\_master\_uami\_ids](#input\_certificate\_master\_uami\_ids) | Set of user assigned managed identity resource IDs to assign to the SCEPman Certificate Master app service. The certificate master app service will always have a system assigned managed identity. This setting therefore is optional and for advanced use cases where additional user assigned managed identities need to be assigned to the app service. For most use cases, this can be left empty. | `set(string)` | `[]` | no |
@@ -333,7 +333,7 @@ module "scepman" {
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_app_services"></a> [app\_services](#output\_app\_services) | Information about the deployed App Services for SCEPman |
 | <a name="output_certmaster_application"></a> [certmaster\_application](#output\_certmaster\_application) | Information about the Application and Service Principal for the SCEPman Certificate Master |
 | <a name="output_certmaster_mi_principal_id"></a> [certmaster\_mi\_principal\_id](#output\_certmaster\_mi\_principal\_id) | principal\_id of the system assigned managed identity of the SCEPman certificate master |
