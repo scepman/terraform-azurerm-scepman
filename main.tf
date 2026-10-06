@@ -46,14 +46,18 @@ resource "azurerm_log_analytics_workspace" "law" {
 
 locals {
   # Prioritize workspace details from cross-subscription input, then data lookup, and finally the workspace created by this module.
-  law_details = var.law_cross_subscription_details != null ? var.law_cross_subscription_details : length(data.azurerm_log_analytics_workspace.existing-law) > 0 ? {
+  law_details = var.law_cross_subscription_details != null ? {
+    id           = var.law_cross_subscription_details.id
+    workspace_id = var.law_cross_subscription_details.workspace_id
+    shared_key   = var.law_cross_subscription_details.shared_key
+    } : length(data.azurerm_log_analytics_workspace.existing-law) > 0 ? {
     id           = data.azurerm_log_analytics_workspace.existing-law[0].id
     workspace_id = data.azurerm_log_analytics_workspace.existing-law[0].workspace_id
-    shared_key   = data.azurerm_log_analytics_workspace.existing-law[0].primary_shared_key
+    shared_key   = var.enable_dcr_log_ingestion ? "" : data.azurerm_log_analytics_workspace.existing-law[0].primary_shared_key
     } : {
     id           = azurerm_log_analytics_workspace.law[0].id
     workspace_id = azurerm_log_analytics_workspace.law[0].workspace_id
-    shared_key   = azurerm_log_analytics_workspace.law[0].primary_shared_key
+    shared_key   = var.enable_dcr_log_ingestion ? "" : azurerm_log_analytics_workspace.law[0].primary_shared_key
   }
 
   law_id           = local.law_details.id

@@ -115,11 +115,11 @@ variable "law_cross_subscription_details" {
   type = object({
     id           = string
     workspace_id = string
-    shared_key   = string
+    shared_key   = optional(string, "")
   })
   default     = null
   nullable    = true
-  description = "Used to reference an existing Log Analytics Workspace located in another subscription. Use this instead of law_name and law_resource_group_name."
+  description = "Used to reference an existing Log Analytics Workspace located in another subscription. Use this instead of law_name and law_resource_group_name. The shared_key field is only required when enable_dcr_log_ingestion is false (deprecated path)."
   validation {
     condition     = var.law_cross_subscription_details == null || can(regex("^/subscriptions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/resourceGroups/[^/]+/providers/Microsoft\\.OperationalInsights/workspaces/[^/]+$", var.law_cross_subscription_details.id))
     error_message = "When provided, law_cross_subscription_details.id must be a valid Log Analytics workspace resource ID."
@@ -129,8 +129,8 @@ variable "law_cross_subscription_details" {
     error_message = "When provided, law_cross_subscription_details.workspace_id must be a UUID."
   }
   validation {
-    condition     = var.law_cross_subscription_details == null || length(trimspace(try(var.law_cross_subscription_details.shared_key, ""))) > 0
-    error_message = "When provided, law_cross_subscription_details.shared_key must be non-empty."
+    condition     = var.law_cross_subscription_details == null || var.enable_dcr_log_ingestion || length(trimspace(coalesce(var.law_cross_subscription_details.shared_key, ""))) > 0
+    error_message = "When provided and enable_dcr_log_ingestion is false, law_cross_subscription_details.shared_key must be non-empty."
   }
   validation {
     condition     = var.law_cross_subscription_details == null || (var.law_name == null && var.law_resource_group_name == null)
@@ -380,4 +380,22 @@ variable "certificate_master_uami_ids" {
   type        = set(string)
   description = "Set of user assigned managed identity resource IDs to assign to the SCEPman Certificate Master app service. The certificate master app service will always have a system assigned managed identity. This setting therefore is optional and for advanced use cases where additional user assigned managed identities need to be assigned to the app service. For most use cases, this can be left empty."
   default     = []
+}
+
+variable "enable_dcr_log_ingestion" {
+  type        = bool
+  default     = true
+  description = "Use the DCR-based Log Ingestion API instead of the deprecated Data Collector API (shared key). The Data Collector API is being retired — set to false only as a temporary opt-out during migration."
+}
+
+variable "dcr_name" {
+  type        = string
+  default     = "dcr-scepmanlogs"
+  description = "Name of the Data Collection Rule for SCEPman logs."
+}
+
+variable "dce_name" {
+  type        = string
+  default     = "dce-scepmanlogs"
+  description = "Name of the Data Collection Endpoint for SCEPman log ingestion."
 }

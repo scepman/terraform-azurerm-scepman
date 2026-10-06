@@ -187,7 +187,6 @@ To re-use an existing Log Analytics Workspace that lives in another subscription
   law_cross_subscription_details = {
     id           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-monitoring/providers/Microsoft.OperationalInsights/workspaces/law-central"
     workspace_id = "00000000-0000-0000-0000-000000000000"
-    shared_key   = "redacted-primary-shared-key"
   }
 ```
 When you supply `law_cross_subscription_details`, omit both `law_name` and `law_resource_group_name`.
@@ -277,7 +276,7 @@ module "scepman" {
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_app_service_application_logs_file_system_level"></a> [app\_service\_application\_logs\_file\_system\_level](#input\_app\_service\_application\_logs\_file\_system\_level) | Application Log level for file\_system | `string` | `"Error"` | no |
 | <a name="input_app_service_logs_detailed_error_messages"></a> [app\_service\_logs\_detailed\_error\_messages](#input\_app\_service\_logs\_detailed\_error\_messages) | Detailed Error messages of the app service | `bool` | `true` | no |
 | <a name="input_app_service_logs_failed_request_tracing"></a> [app\_service\_logs\_failed\_request\_tracing](#input\_app\_service\_logs\_failed\_request\_tracing) | Trace failed requests | `bool` | `false` | no |
@@ -293,11 +292,14 @@ module "scepman" {
 | <a name="input_artifacts_url_primary"></a> [artifacts\_url\_primary](#input\_artifacts\_url\_primary) | URL of the artifacts for SCEPman | `string` | `"https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts.zip"` | no |
 | <a name="input_certificate_master_uami_ids"></a> [certificate\_master\_uami\_ids](#input\_certificate\_master\_uami\_ids) | Set of user assigned managed identity resource IDs to assign to the SCEPman Certificate Master app service. The certificate master app service will always have a system assigned managed identity. This setting therefore is optional and for advanced use cases where additional user assigned managed identities need to be assigned to the app service. For most use cases, this can be left empty. | `set(string)` | `[]` | no |
 | <a name="input_create_networking"></a> [create\_networking](#input\_create\_networking) | Whether the module should create and manage networking resources (VNet, subnets, NSGs, Private DNS zones, DNS zone links, Private Endpoints). Set to false to use pre-existing subnets (BYOS); in this mode, you must provide existing\_subnet\_appservices\_id. You are responsible for managing Private Endpoints, DNS zones, and NSGs externally. This explicit toggle ensures plan-time determinism even when subnet IDs are computed from other modules in the same plan. | `bool` | `true` | no |
+| <a name="input_dce_name"></a> [dce\_name](#input\_dce\_name) | Name of the Data Collection Endpoint for SCEPman log ingestion. | `string` | `"dce-scepmanlogs"` | no |
+| <a name="input_dcr_name"></a> [dcr\_name](#input\_dcr\_name) | Name of the Data Collection Rule for SCEPman logs. | `string` | `"dcr-scepmanlogs"` | no |
 | <a name="input_enable_application_insights"></a> [enable\_application\_insights](#input\_enable\_application\_insights) | Should Terraform create and connect Application Insights for the App services? NOTE: This will prevent Terraform from beeing able to destroy the ressource group! | `bool` | `false` | no |
+| <a name="input_enable_dcr_log_ingestion"></a> [enable\_dcr\_log\_ingestion](#input\_enable\_dcr\_log\_ingestion) | Use the DCR-based Log Ingestion API instead of the deprecated Data Collector API (shared key). The Data Collector API is being retired — set to false only as a temporary opt-out during migration. | `bool` | `true` | no |
 | <a name="input_existing_subnet_appservices_id"></a> [existing\_subnet\_appservices\_id](#input\_existing\_subnet\_appservices\_id) | Resource ID of an existing subnet delegated to Microsoft.Web/serverFarms for App Service VNet integration. Required when create\_networking is false; presence and format are validated at apply time via a check block to support computed values from other modules in the same plan. | `string` | `null` | no |
 | <a name="input_key_vault_name"></a> [key\_vault\_name](#input\_key\_vault\_name) | Name of the key vault | `string` | n/a | yes |
 | <a name="input_key_vault_use_rbac"></a> [key\_vault\_use\_rbac](#input\_key\_vault\_use\_rbac) | Use RBAC for the key vault or the older access policies | `bool` | `true` | no |
-| <a name="input_law_cross_subscription_details"></a> [law\_cross\_subscription\_details](#input\_law\_cross\_subscription\_details) | Used to reference an existing Log Analytics Workspace located in another subscription. Use this instead of law\_name and law\_resource\_group\_name. | <pre>object({<br/>    id           = string<br/>    workspace_id = string<br/>    shared_key   = string<br/>  })</pre> | `null` | no |
+| <a name="input_law_cross_subscription_details"></a> [law\_cross\_subscription\_details](#input\_law\_cross\_subscription\_details) | Used to reference an existing Log Analytics Workspace located in another subscription. Use this instead of law\_name and law\_resource\_group\_name. The shared\_key field is only required when enable\_dcr\_log\_ingestion is false (deprecated path). | <pre>object({<br/>    id           = string<br/>    workspace_id = string<br/>    shared_key   = optional(string, "")<br/>  })</pre> | `null` | no |
 | <a name="input_law_name"></a> [law\_name](#input\_law\_name) | Name for the Log Analytics Workspace | `string` | `null` | no |
 | <a name="input_law_resource_group_name"></a> [law\_resource\_group\_name](#input\_law\_resource\_group\_name) | Resource Group of existing Log Analytics Workspace | `string` | `null` | no |
 | <a name="input_location"></a> [location](#input\_location) | Azure Region where the resources should be created | `string` | n/a | yes |
@@ -333,10 +335,13 @@ module "scepman" {
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_app_services"></a> [app\_services](#output\_app\_services) | Information about the deployed App Services for SCEPman |
 | <a name="output_certmaster_application"></a> [certmaster\_application](#output\_certmaster\_application) | Information about the Application and Service Principal for the SCEPman Certificate Master |
 | <a name="output_certmaster_mi_principal_id"></a> [certmaster\_mi\_principal\_id](#output\_certmaster\_mi\_principal\_id) | principal\_id of the system assigned managed identity of the SCEPman certificate master |
+| <a name="output_dce_id"></a> [dce\_id](#output\_dce\_id) | Resource ID of the Data Collection Endpoint for SCEPman log ingestion. Null when enable\_dcr\_log\_ingestion is false. |
+| <a name="output_dcr_id"></a> [dcr\_id](#output\_dcr\_id) | Resource ID of the Data Collection Rule for SCEPman logs. Null when enable\_dcr\_log\_ingestion is false. |
+| <a name="output_dcr_immutable_id"></a> [dcr\_immutable\_id](#output\_dcr\_immutable\_id) | Immutable ID of the Data Collection Rule. Null when enable\_dcr\_log\_ingestion is false. |
 | <a name="output_primary_mi_principal_id"></a> [primary\_mi\_principal\_id](#output\_primary\_mi\_principal\_id) | principal\_id of the system assigned managed identity of the SCEPman primary app |
 | <a name="output_scepman_application"></a> [scepman\_application](#output\_scepman\_application) | Information about the Application and Service Principal for the SCEPman API |
 | <a name="output_scepman_certificate_master_url"></a> [scepman\_certificate\_master\_url](#output\_scepman\_certificate\_master\_url) | SCEPman Certificate Master Url |
