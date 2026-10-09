@@ -5,7 +5,7 @@ resource "azurerm_storage_account" "storage" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
-  public_network_access_enabled   = var.storage_account_public_network_access_enabled
+  public_network_access           = var.storage_account_public_network_access_enabled ? "Enabled" : "Disabled"
   min_tls_version                 = var.storage_account_min_tls_version
   allow_nested_items_to_be_public = var.storage_account_allow_nested_items_to_be_public
   shared_access_key_enabled       = var.storage_account_shared_access_key_enabled
