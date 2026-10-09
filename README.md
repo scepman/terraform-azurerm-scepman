@@ -9,7 +9,7 @@ It is an Azure Web App providing the SCEP protocol and works directly with the M
 
 - Access to an **Azure subscription** (or Resource Group) with `Owner` RBAC Role assigned to Principal used for deployment
 - Terraform environment - local, GitHub Codespaces or Dev Containers
-- `hashicorp/azurerm` provider `>= 5.0, < 6.0.0`. When upgrading from AzureRM v4, see the [Upgrade Guide](UPGRADE.md)
+- `hashicorp/azurerm` provider `>= 5.9, < 6.0.0`. When upgrading from AzureRM v4, see the [Upgrade Guide](UPGRADE.md)
 
 #### Local Environment:
 
@@ -51,7 +51,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 5.0"
+      version = ">= 5.9"
     }
   }
   backend "local" {}
@@ -133,7 +133,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 5.0"
+      version = ">= 5.9"
     }
   }
   backend "local" {}
