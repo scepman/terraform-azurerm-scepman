@@ -7,12 +7,13 @@ resource "time_offset" "managed_identity" {
 ### Windows App Service
 # Scepman Primary
 resource "azurerm_windows_web_app" "app" {
-  count                     = (lower(var.service_plan_os_type) == "windows" && !var.manage_entra_apps) ? 1 : 0
-  name                      = var.app_service_name_primary
-  resource_group_name       = var.resource_group_name
-  location                  = var.location
-  https_only                = false
-  virtual_network_subnet_id = local.subnet_appservices_id
+  count                         = (lower(var.service_plan_os_type) == "windows" && !var.manage_entra_apps) ? 1 : 0
+  name                          = var.app_service_name_primary
+  resource_group_name           = var.resource_group_name
+  location                      = var.location
+  https_only                    = false
+  virtual_network_subnet_id     = local.subnet_appservices_id
+  public_network_access_enabled = var.public_network_access_enabled
 
   service_plan_id = local.service_plan_resource_id
 
@@ -74,12 +75,13 @@ resource "azurerm_windows_web_app" "app" {
 
 # Certificate Master App Service
 resource "azurerm_windows_web_app" "app_cm" {
-  count                     = (lower(var.service_plan_os_type) == "windows" && !var.manage_entra_apps) ? 1 : 0
-  name                      = var.app_service_name_certificate_master
-  resource_group_name       = var.resource_group_name
-  location                  = var.location
-  https_only                = true
-  virtual_network_subnet_id = local.subnet_appservices_id
+  count                         = (lower(var.service_plan_os_type) == "windows" && !var.manage_entra_apps) ? 1 : 0
+  name                          = var.app_service_name_certificate_master
+  resource_group_name           = var.resource_group_name
+  location                      = var.location
+  https_only                    = true
+  virtual_network_subnet_id     = local.subnet_appservices_id
+  public_network_access_enabled = var.public_network_access_enabled
 
   service_plan_id = local.service_plan_resource_id
 
@@ -139,12 +141,13 @@ resource "azurerm_windows_web_app" "app_cm" {
 ### Linux App Service
 # Scepman Primary
 resource "azurerm_linux_web_app" "app" {
-  count                     = lower(var.service_plan_os_type) == "linux" && !var.manage_entra_apps ? 1 : 0
-  name                      = var.app_service_name_primary
-  resource_group_name       = var.resource_group_name
-  location                  = var.location
-  https_only                = false
-  virtual_network_subnet_id = local.subnet_appservices_id
+  count                         = lower(var.service_plan_os_type) == "linux" && !var.manage_entra_apps ? 1 : 0
+  name                          = var.app_service_name_primary
+  resource_group_name           = var.resource_group_name
+  location                      = var.location
+  https_only                    = false
+  virtual_network_subnet_id     = local.subnet_appservices_id
+  public_network_access_enabled = var.public_network_access_enabled
 
   service_plan_id = local.service_plan_resource_id
 
@@ -207,12 +210,13 @@ resource "azurerm_linux_web_app" "app" {
 
 # Certificate Master App Service
 resource "azurerm_linux_web_app" "app_cm" {
-  count                     = (lower(var.service_plan_os_type) == "linux" && !var.manage_entra_apps) ? 1 : 0
-  name                      = var.app_service_name_certificate_master
-  resource_group_name       = var.resource_group_name
-  location                  = var.location
-  https_only                = true
-  virtual_network_subnet_id = local.subnet_appservices_id
+  count                         = (lower(var.service_plan_os_type) == "linux" && !var.manage_entra_apps) ? 1 : 0
+  name                          = var.app_service_name_certificate_master
+  resource_group_name           = var.resource_group_name
+  location                      = var.location
+  https_only                    = true
+  virtual_network_subnet_id     = local.subnet_appservices_id
+  public_network_access_enabled = var.public_network_access_enabled
 
   service_plan_id = local.service_plan_resource_id
 

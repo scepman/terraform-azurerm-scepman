@@ -237,6 +237,12 @@ variable "app_service_name_certificate_master" {
   description = "Name of the certificate master app service"
 }
 
+variable "public_network_access_enabled" {
+  type        = bool
+  default     = true
+  description = "Whether public network access is enabled for the SCEPman primary and Certificate Master App Services."
+}
+
 variable "key_vault_name" {
   type        = string
   description = "Name of the key vault"
@@ -278,10 +284,10 @@ variable "vnet_address_space" {
   default     = ["10.158.200.0/24"]
   description = "Address-Space of the VNET. Ignored when create_networking is false."
 
-    validation {
-      condition = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
-      error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
-    }
+  validation {
+    condition     = length(var.vnet_address_space) > 0 && can(cidrhost(var.vnet_address_space[0], 0))
+    error_message = "vnet_address_space must be a list with at least one valid CIDR notation (e.g., [\"10.0.0.0/16\"])."
+  }
 }
 
 variable "subnet_appservices_name" {
