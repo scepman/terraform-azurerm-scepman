@@ -319,6 +319,18 @@ variable "manage_entra_apps" {
   default     = false
 }
 
+variable "additional_spa_redirect_uris_primary" {
+  type        = list(string)
+  default     = []
+  description = "Additional SPA redirect URIs merged with the module-managed azurewebsites.net signin-oidc URI on the SCEPman-api Entra application. Use for custom domains when manage_entra_apps is true."
+}
+
+variable "additional_spa_redirect_uris_certificate_master" {
+  type        = list(string)
+  default     = []
+  description = "Additional SPA redirect URIs merged with the module-managed azurewebsites.net signin-oidc URI on the SCEPman-CertMaster Entra application. Use for custom domains when manage_entra_apps is true."
+}
+
 variable "primary_uami_ids" {
   type        = set(string)
   description = "Set of user assigned managed identity resource IDs to assign to the SCEPman primary app service. The primary app service will always have a system assigned managed identity. This setting therefore is optional and for advanced use cases where additional user assigned managed identities need to be assigned to the app service. For most use cases, this can be left empty."
