@@ -133,7 +133,6 @@ variable "service_plan_os_type" {
     condition     = contains(["Windows", "Linux"], var.service_plan_os_type)
     error_message = "service_plan_os_type must be either 'Windows' or 'Linux'"
   }
-  }
   description = "The type of operating system to use for the app service plan. Possible values are 'Windows' or 'Linux'."
 }
 

@@ -121,10 +121,9 @@ resource "azurerm_private_dns_zone" "dnsprivatezone-kv" {
 resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-kv" {
   count = local.create_networking ? 1 : 0
 
-  name                  = "dnszonelink-kv"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone-kv[0].name
-  virtual_network_id    = azurerm_virtual_network.vnet-scepman[0].id
+  name                = "dnszonelink-kv"
+  private_dns_zone_id = azurerm_private_dns_zone.dnsprivatezone-kv[0].id
+  virtual_network_id  = azurerm_virtual_network.vnet-scepman[0].id
 }
 
 resource "azurerm_private_dns_zone" "dnsprivatezone-sts" {
@@ -137,10 +136,9 @@ resource "azurerm_private_dns_zone" "dnsprivatezone-sts" {
 resource "azurerm_private_dns_zone_virtual_network_link" "dnszonelink-sts" {
   count = local.create_networking ? 1 : 0
 
-  name                  = "dnszonelink-sts"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.dnsprivatezone-sts[0].name
-  virtual_network_id    = azurerm_virtual_network.vnet-scepman[0].id
+  name                = "dnszonelink-sts"
+  private_dns_zone_id = azurerm_private_dns_zone.dnsprivatezone-sts[0].id
+  virtual_network_id  = azurerm_virtual_network.vnet-scepman[0].id
 }
 
 
