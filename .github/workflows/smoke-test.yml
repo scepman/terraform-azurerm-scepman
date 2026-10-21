@@ -20,14 +20,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Generate resource group name
         id: rg
         run: echo "name=rg-scepman-smoke-$(head -c 4 /dev/urandom | xxd -p)" >> "$GITHUB_OUTPUT"
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_wrapper: false
 
@@ -37,11 +39,14 @@ jobs:
 
       - name: Terraform Apply
         working-directory: examples/quickstart
+        env:
+          LOCATION: ${{ vars.LOCATION }}
+          RESOURCE_GROUP_NAME: ${{ steps.rg.outputs.name }}
         run: |
           terraform apply -auto-approve \
-            -var="subscription_id=${{ vars.ARM_SUBSCRIPTION_ID }}" \
-            -var="location=${{ vars.LOCATION }}" \
-            -var="resource_group_name=${{ steps.rg.outputs.name }}"
+            -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
+            -var="location=${LOCATION}" \
+            -var="resource_group_name=${RESOURCE_GROUP_NAME}"
 
       - name: Get SCEPman URL
         id: scepman
@@ -52,21 +57,26 @@ jobs:
         run: sleep 60
 
       - name: Probe SCEPman health
+        env:
+          SCEPMAN_URL: ${{ steps.scepman.outputs.url }}
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" "${{ steps.scepman.outputs.url }}/api/probe")
+          response=$(curl -s -o /dev/null -w "%{http_code}" "${SCEPMAN_URL}/api/probe")
           echo "SCEPman probe returned HTTP $response"
           if [ "$response" != "200" ]; then
             echo "::error::SCEPman health probe failed with HTTP $response"
-            curl -s "${{ steps.scepman.outputs.url }}/api/probe" || true
+            curl -s "${SCEPMAN_URL}/api/probe" || true
             exit 1
           fi
 
       - name: Terraform Destroy
         if: always()
         working-directory: examples/quickstart
+        env:
+          LOCATION: ${{ vars.LOCATION }}
+          RESOURCE_GROUP_NAME: ${{ steps.rg.outputs.name }}
         run: |
           terraform destroy -auto-approve \
-            -var="subscription_id=${{ vars.ARM_SUBSCRIPTION_ID }}" \
-            -var="location=${{ vars.LOCATION }}" \
-            -var="resource_group_name=${{ steps.rg.outputs.name }}" \
+            -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
+            -var="location=${LOCATION}" \
+            -var="resource_group_name=${RESOURCE_GROUP_NAME}" \
             -var='app_settings_primary={"AppConfig:KeyVaultConfig:RootCertificateConfig:KeyType":"RSA"}'
