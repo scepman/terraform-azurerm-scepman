@@ -3,14 +3,20 @@ name: Smoke Test
 on:
   workflow_dispatch:
 
-permissions:
-  id-token: write
-  contents: read
+permissions: {}
+
+# Never cancel a running deployment, or terraform destroy would be skipped.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   smoke-test:
     name: Deploy Quickstart Example
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # OIDC login to Azure
+      contents: read
 
     env:
       ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
