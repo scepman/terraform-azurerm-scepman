@@ -23,7 +23,7 @@ resource "azurerm_windows_web_app" "app_full" {
     minimum_tls_version               = var.app_service_minimum_tls_version_scepman
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v8.0"
+      dotnet_version = "v10.0"
     }
   }
 
@@ -85,7 +85,7 @@ resource "azurerm_windows_web_app" "app_cm_full" {
     minimum_tls_version               = var.app_service_minimum_tls_version_certificate_master
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v8.0"
+      dotnet_version = "v10.0"
     }
   }
 
@@ -143,7 +143,7 @@ resource "azurerm_linux_web_app" "app_full" {
     minimum_tls_version               = var.app_service_minimum_tls_version_scepman
     application_stack {
       #current_stack  = "dotnet"
-      dotnet_version = "8.0"
+      dotnet_version = "10.0"
     }
   }
 
@@ -206,7 +206,7 @@ resource "azurerm_linux_web_app" "app_cm_full" {
     minimum_tls_version               = var.app_service_minimum_tls_version_certificate_master
     application_stack {
       #  current_stack  = "dotnet"
-      dotnet_version = "8.0"
+      dotnet_version = "10.0"
     }
   }
 
