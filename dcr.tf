@@ -19,7 +19,7 @@ resource "azurerm_log_analytics_workspace_table_custom_log" "scepman" {
 
   column {
     name = "TimeGenerated"
-    type = "datetime"
+    type = "dateTime"
   }
   column {
     name = "Timestamp"
