@@ -99,3 +99,18 @@ output "certmaster_mi_principal_id" {
   value       = local.cm_mi_principal_id
   description = "principal_id of the system assigned managed identity of the SCEPman certificate master"
 }
+
+output "dcr_id" {
+  value       = try(azurerm_monitor_data_collection_rule.scepman[0].id, null)
+  description = "Resource ID of the Data Collection Rule for SCEPman logs. Null when enable_dcr_log_ingestion is false."
+}
+
+output "dce_id" {
+  value       = try(azurerm_monitor_data_collection_endpoint.scepman[0].id, null)
+  description = "Resource ID of the Data Collection Endpoint for SCEPman log ingestion. Null when enable_dcr_log_ingestion is false."
+}
+
+output "dcr_immutable_id" {
+  value       = try(azurerm_monitor_data_collection_rule.scepman[0].immutable_id, null)
+  description = "Immutable ID of the Data Collection Rule. Null when enable_dcr_log_ingestion is false."
+}
