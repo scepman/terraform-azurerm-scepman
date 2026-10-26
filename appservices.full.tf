@@ -24,7 +24,7 @@ resource "azurerm_windows_web_app" "app_full" {
     minimum_tls_version               = var.app_service_minimum_tls_version_scepman
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v8.0"
+      dotnet_version = "v10.0"
     }
 
     ip_restriction_default_action     = local.network_restrictions_primary != null ? local.network_restrictions_primary.ip_restriction_default_action : null
@@ -134,7 +134,7 @@ resource "azurerm_windows_web_app" "app_cm_full" {
     minimum_tls_version               = var.app_service_minimum_tls_version_certificate_master
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v8.0"
+      dotnet_version = "v10.0"
     }
 
     ip_restriction_default_action     = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.ip_restriction_default_action : null
@@ -240,7 +240,7 @@ resource "azurerm_linux_web_app" "app_full" {
     minimum_tls_version               = var.app_service_minimum_tls_version_scepman
     application_stack {
       #current_stack  = "dotnet"
-      dotnet_version = "8.0"
+      dotnet_version = "10.0"
     }
 
     ip_restriction_default_action     = local.network_restrictions_primary != null ? local.network_restrictions_primary.ip_restriction_default_action : null
@@ -351,7 +351,7 @@ resource "azurerm_linux_web_app" "app_cm_full" {
     minimum_tls_version               = var.app_service_minimum_tls_version_certificate_master
     application_stack {
       #  current_stack  = "dotnet"
-      dotnet_version = "8.0"
+      dotnet_version = "10.0"
     }
 
     ip_restriction_default_action     = local.network_restrictions_certificate_master != null ? local.network_restrictions_certificate_master.ip_restriction_default_action : null
