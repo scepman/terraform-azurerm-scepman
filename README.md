@@ -9,6 +9,7 @@ It is an Azure Web App providing the SCEP protocol and works directly with the M
 
 - Access to an **Azure subscription** (or Resource Group) with `Owner` RBAC Role assigned to Principal used for deployment
 - Terraform environment - local, GitHub Codespaces or Dev Containers
+- `hashicorp/azurerm` provider `>= 5.9, < 6.0.0`. When upgrading from AzureRM v4, see the [Upgrade Guide](UPGRADE.md)
 
 #### Local Environment:
 
@@ -50,7 +51,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.42"
+      version = ">= 5.9"
     }
   }
   backend "local" {}
@@ -63,8 +64,16 @@ terraform {
 provider "azurerm" {
   features {}
   storage_use_azuread = true
-  partner_id          = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
-  subscription_id     = var.subscription_id
+  resource_providers_to_register = [
+    "Microsoft.Insights",
+    "Microsoft.KeyVault",
+    "Microsoft.Network",
+    "Microsoft.OperationalInsights",
+    "Microsoft.Storage",
+    "Microsoft.Web",
+  ]
+  partner_id      = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
+  subscription_id = var.subscription_id
 }
 
 # Resources
@@ -124,7 +133,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.42"
+      version = ">= 5.9"
     }
   }
   backend "local" {}
@@ -137,8 +146,16 @@ terraform {
 provider "azurerm" {
   features {}
   storage_use_azuread = true
-  partner_id          = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
-  subscription_id     = var.subscription_id
+  resource_providers_to_register = [
+    "Microsoft.Insights",
+    "Microsoft.KeyVault",
+    "Microsoft.Network",
+    "Microsoft.OperationalInsights",
+    "Microsoft.Storage",
+    "Microsoft.Web",
+  ]
+  partner_id      = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
+  subscription_id = var.subscription_id
 }
 
 # Resources

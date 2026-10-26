@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.42"
+      version = ">= 5.9"
     }
   }
   backend "local" {}
@@ -17,8 +17,16 @@ terraform {
 provider "azurerm" {
   features {}
   storage_use_azuread = true
-  partner_id          = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
-  subscription_id     = var.subscription_id
+  resource_providers_to_register = [
+    "Microsoft.Insights",
+    "Microsoft.KeyVault",
+    "Microsoft.Network",
+    "Microsoft.OperationalInsights",
+    "Microsoft.Storage",
+    "Microsoft.Web",
+  ]
+  partner_id      = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
+  subscription_id = var.subscription_id
 }
 
 # Resources

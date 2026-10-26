@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.42"
+      version = ">= 5.9"
     }
   }
   backend "local" {}
@@ -17,8 +17,16 @@ terraform {
 provider "azurerm" {
   features {}
   storage_use_azuread = true
-  partner_id          = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
-  subscription_id     = var.subscription_id
+  resource_providers_to_register = [
+    "Microsoft.Insights",
+    "Microsoft.KeyVault",
+    "Microsoft.Network",
+    "Microsoft.OperationalInsights",
+    "Microsoft.Storage",
+    "Microsoft.Web",
+  ]
+  partner_id      = "a262352f-52a9-4ed9-a9ba-6a2b2478d19b"
+  subscription_id = var.subscription_id
 }
 
 # Resources
@@ -66,7 +74,7 @@ module "scepman" {
   manage_entra_apps                   = true
 
   service_plan_os_type = "Linux"
-  service_plan_sku     = "P0V3"
+  service_plan_sku     = "P0v3"
 
   artifacts_url_primary            = "https://raw.githubusercontent.com/scepman/install/master/dist/Artifacts-Linux.zip"
   artifacts_url_certificate_master = "https://raw.githubusercontent.com/scepman/install/master/dist-certmaster/CertMaster-Artifacts-Linux.zip"
