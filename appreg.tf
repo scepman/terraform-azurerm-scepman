@@ -200,7 +200,8 @@ locals {
     azurerm_windows_web_app.app_cm_full[0].identity[0].principal_id
   )
 
-  certmaster_base_url = format("https://%s", local.default_hostname_cm)
+  scepman_primary_base_url = format("https://%s", local.default_hostname_primary)
+  certmaster_base_url      = format("https://%s", local.default_hostname_cm)
 }
 
 data "azuread_application_published_app_ids" "well_known" {
@@ -251,6 +252,17 @@ resource "time_sleep" "wait_for_scepman_sp" {
   create_duration = "30s"
 }
 
+resource "azuread_application_redirect_uris" "appreg_scepman" {
+  count          = var.manage_entra_apps ? 1 : 0
+  application_id = module.appreg_scepman[0].id
+  type           = "SPA"
+
+  redirect_uris = concat(
+    [format("%s/signin-oidc", local.scepman_primary_base_url)],
+    var.additional_spa_redirect_uris_primary
+  )
+}
+
 locals {
   scepman_api_scope = var.manage_entra_apps ? "api://${module.appreg_scepman[0].client_id}" : null
 }
@@ -285,9 +297,10 @@ resource "azuread_application_redirect_uris" "appreg_certmaster" {
   application_id = module.appreg_certmaster[0].id
   type           = "SPA"
 
-  redirect_uris = [
-    format("%s/signin-oidc", local.certmaster_base_url)
-  ]
+  redirect_uris = concat(
+    [format("%s/signin-oidc", local.certmaster_base_url)],
+    var.additional_spa_redirect_uris_certificate_master
+  )
 }
 
 resource "azuread_application_api_access" "certmaster_graph" {

@@ -295,6 +295,8 @@ module "scepman" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_additional_spa_redirect_uris_certificate_master"></a> [additional\_spa\_redirect\_uris\_certificate\_master](#input\_additional\_spa\_redirect\_uris\_certificate\_master) | Additional SPA redirect URIs merged with the module-managed azurewebsites.net signin-oidc URI on the SCEPman-CertMaster Entra application. Use for custom domains when manage\_entra\_apps is true. | `list(string)` | `[]` | no |
+| <a name="input_additional_spa_redirect_uris_primary"></a> [additional\_spa\_redirect\_uris\_primary](#input\_additional\_spa\_redirect\_uris\_primary) | Additional SPA redirect URIs merged with the module-managed azurewebsites.net signin-oidc URI on the SCEPman-api Entra application. Use for custom domains when manage\_entra\_apps is true. | `list(string)` | `[]` | no |
 | <a name="input_app_service_application_logs_file_system_level"></a> [app\_service\_application\_logs\_file\_system\_level](#input\_app\_service\_application\_logs\_file\_system\_level) | Application Log level for file\_system | `string` | `"Error"` | no |
 | <a name="input_app_service_logs_detailed_error_messages"></a> [app\_service\_logs\_detailed\_error\_messages](#input\_app\_service\_logs\_detailed\_error\_messages) | Detailed Error messages of the app service | `bool` | `true` | no |
 | <a name="input_app_service_logs_failed_request_tracing"></a> [app\_service\_logs\_failed\_request\_tracing](#input\_app\_service\_logs\_failed\_request\_tracing) | Trace failed requests | `bool` | `false` | no |
