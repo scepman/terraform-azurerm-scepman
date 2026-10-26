@@ -12,7 +12,7 @@ resource "azurerm_windows_web_app" "app" {
   resource_group_name       = var.resource_group_name
   location                  = var.location
   https_only                = false
-  virtual_network_subnet_id = "${azurerm_virtual_network.vnet-scepman.id}/subnets/${var.subnet_appservices_name}"
+  virtual_network_subnet_id = local.subnet_appservices_id
 
   service_plan_id = local.service_plan_resource_id
 
@@ -28,7 +28,7 @@ resource "azurerm_windows_web_app" "app" {
     minimum_tls_version               = var.app_service_minimum_tls_version_scepman
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v8.0"
+      dotnet_version = "v10.0"
     }
   }
 
@@ -79,7 +79,7 @@ resource "azurerm_windows_web_app" "app_cm" {
   resource_group_name       = var.resource_group_name
   location                  = var.location
   https_only                = true
-  virtual_network_subnet_id = "${azurerm_virtual_network.vnet-scepman.id}/subnets/${var.subnet_appservices_name}"
+  virtual_network_subnet_id = local.subnet_appservices_id
 
   service_plan_id = local.service_plan_resource_id
 
@@ -95,7 +95,7 @@ resource "azurerm_windows_web_app" "app_cm" {
     minimum_tls_version               = var.app_service_minimum_tls_version_certificate_master
     application_stack {
       current_stack  = "dotnet"
-      dotnet_version = "v8.0"
+      dotnet_version = "v10.0"
     }
   }
 
@@ -144,7 +144,7 @@ resource "azurerm_linux_web_app" "app" {
   resource_group_name       = var.resource_group_name
   location                  = var.location
   https_only                = false
-  virtual_network_subnet_id = "${azurerm_virtual_network.vnet-scepman.id}/subnets/${var.subnet_appservices_name}"
+  virtual_network_subnet_id = local.subnet_appservices_id
 
   service_plan_id = local.service_plan_resource_id
 
@@ -160,7 +160,7 @@ resource "azurerm_linux_web_app" "app" {
     minimum_tls_version               = var.app_service_minimum_tls_version_scepman
     application_stack {
       #current_stack  = "dotnet"
-      dotnet_version = "8.0"
+      dotnet_version = "10.0"
     }
   }
 
@@ -212,7 +212,7 @@ resource "azurerm_linux_web_app" "app_cm" {
   resource_group_name       = var.resource_group_name
   location                  = var.location
   https_only                = true
-  virtual_network_subnet_id = "${azurerm_virtual_network.vnet-scepman.id}/subnets/${var.subnet_appservices_name}"
+  virtual_network_subnet_id = local.subnet_appservices_id
 
   service_plan_id = local.service_plan_resource_id
 
@@ -228,7 +228,7 @@ resource "azurerm_linux_web_app" "app_cm" {
     minimum_tls_version               = var.app_service_minimum_tls_version_certificate_master
     application_stack {
       #  current_stack  = "dotnet"
-      dotnet_version = "8.0"
+      dotnet_version = "10.0"
     }
   }
 
